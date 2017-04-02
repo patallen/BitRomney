@@ -3,30 +3,17 @@ use cpu::Cpu;
 use mmu::Mmu;
 
 
-// pub struct Interconnect {
-// 	rom: Option<Rom>,
-// 	ram: Box<[u8]>,
-// 	mmu: Mmu,
-// }
-
-// impl Interconnect {
-// 	pub fn new(rom: Rom) -> Interconnect {
-// 		Interconnect {
-// 			rom: rom,
-// 			mmu: Mmu::new(),
-// 		}
-// 	}
-// }
 pub struct Gameboy {
 	mmu: Mmu,
 	cpu: Cpu,
 }
 
 impl Gameboy {
-	pub fn new() -> Gameboy {
+	pub fn new(rompath: &str) -> Gameboy {
+		let rom = Rom::new(rompath);
 		Gameboy {
 			cpu: Cpu::new(),
-			mmu: Mmu::new(),
+			mmu: Mmu::new(rom),
 		}
 	}
 	pub fn run(&mut self) {
@@ -35,7 +22,6 @@ impl Gameboy {
 		}
 	}
 	pub fn step(&mut self) {
-		self.cpu.cycle();
-		println!("Stepping!");
+		self.cpu.cycle(&mut self.mmu);
 	}
 }
