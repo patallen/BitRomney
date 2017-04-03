@@ -3,6 +3,7 @@ mod cpu;
 mod mmu;
 mod gameboy;
 mod operations;
+mod bitty;
 
 
 use rom::Rom;

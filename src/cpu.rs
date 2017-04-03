@@ -4,7 +4,9 @@ use std::time::Duration;
 use rom::Rom;
 use mmu::Mmu;
 use operations::{get_operation, Operation};
-// use gameboy::Interconnect;
+
+use bitty::LittleEndian;
+
 
 pub struct Cpu {
     pub bc: u16,
@@ -29,8 +31,7 @@ impl Cpu {
         }
     }
     pub fn cycle(&mut self, mmu: &mut Mmu) {
-        let code = mmu.read(self.pc);
-        let operation = get_operation(code, false);
+        let operation = self.get_operation(mmu);
 
         self.handle_operation(operation, mmu);
 
@@ -42,7 +43,17 @@ impl Cpu {
         (operation.func)(self, mmu);
         self.pc += operation.size;
     }
-    fn cb(&mut self) {
-        self.pc += 1;
+    fn get_operation(&self, mmu: &mut Mmu) -> Operation {
+        let first = mmu.read(self.pc);
+        let mut cb = false;
+        let code = match mmu.read(self.pc) {
+            0xCB => { cb = true; mmu.read(self.pc + 1) },
+            _ => first
+        };
+        println!("{}{}", code, cb);
+        get_operation(code, cb)
+    }
+    pub fn flags(&self) -> u8 {
+        self.af.get_lsb()
     }
 }
