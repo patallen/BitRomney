@@ -35,11 +35,16 @@ impl fmt::Debug for Operation {
 }
 
 pub fn get_operation(code: u16) -> Operation {
+    let prefix = code >> 8;
     let scode = code & 0x00F0;
     let lcode = code & 0x000F;
 
-    match code >> 8 {
-        0x00 => match scode {
+    match prefix {
+        0x00 => match scode {   // No Prefix
+            0x00 => match lcode {
+                0x0E => Operation::new(code, opx0E, 2, 8,  "LD C, d8"),
+                _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
+            },
             0x20 => match lcode {
                 0x00 => Operation::new(code, opx20, 2, 12, "JR NZ, r8"),
                 0x01 => Operation::new(code, opx21, 3, 12, "LD HL, d16"),
@@ -47,7 +52,8 @@ pub fn get_operation(code: u16) -> Operation {
             },
             0x30 => match lcode {
                 0x01 => Operation::new(code, opx31, 3, 12, "LD SP, d16"),
-                0x02 => Operation::new(code, opx32, 1, 8, "LD (HL-), A"),
+                0x02 => Operation::new(code, opx32, 1, 8,  "LD (HL-), A"),
+                0x0E => Operation::new(code, opx3E, 2, 8,  "LD A, d8"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             0x70 => match lcode {
@@ -59,7 +65,7 @@ pub fn get_operation(code: u16) -> Operation {
             },
             _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
         },
-        0xCB => match scode {
+        0xCB => match scode {   // CB Prefix
             0x70 => match lcode {
                 0x0C => Operation::new(code, cbx7C, 2, 8, "BIT 7, H"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
@@ -73,21 +79,28 @@ pub fn get_operation(code: u16) -> Operation {
 pub fn unimplemented(cpu: &mut Cpu, mmu: &mut Mmu) {}
 pub fn opx00(cpu: &mut Cpu, mmu: &mut Mmu) {}
 pub fn opx20(cpu: &mut Cpu, mmu: &mut Mmu) {
-
+    let flags = cpu.flags();
+    let z = flags.get_bit(flag::Z);
+    let to_jump = cpu.immediate_u8(mmu);
+    let sign = cpu.flags().get_bit(flag::N);
+    if z == 1 {
+        cpu.pc = match sign {
+            0 => cpu.pc + to_jump as usize,
+            1 => cpu.pc - to_jump as usize,
+            _ => panic!("Invalid sign from Z flag... not really possible.")
+        };
+    }
+    println!("Sign: {}, Value {}", sign, to_jump);
 
 }
 pub fn opx21(cpu: &mut Cpu, mmu: &mut Mmu) {
-    let a = mmu.read(cpu.pc + 1);
-    let b = mmu.read(cpu.pc + 2);
-    cpu.hl = ((b as u16) << 8) | a as u16;
+    cpu.hl = cpu.immediate_u16(mmu);
 }
 pub fn opx32(cpu: &mut Cpu, mmu: &mut Mmu) {
     cpu.hl = cpu.hl.wrapping_sub(cpu.af.get_msb().into());
 }
 pub fn opx31(cpu: &mut Cpu, mmu: &mut Mmu) {
-    let a = mmu.read(cpu.pc + 1);
-    let b = mmu.read(cpu.pc + 2);
-    cpu.sp = ((b as u16) << 8) | a as u16;
+    cpu.sp = cpu.immediate_u16(mmu);
 }
 pub fn opxAF(cpu: &mut Cpu, mmu: &mut Mmu) {
     cpu.af &= 0xFF00;
@@ -98,7 +111,16 @@ pub  fn cbx7C(cpu: &mut Cpu, mmu: &mut Mmu) {
     // always set flags N=0 and H=1
     let mut flags = cpu.flags();
     let hbit = cpu.hl.get_msb().get_bit(7);
-    flags.set_bit(flag::Z as usize, hbit);
+    flags.set_bit(flag::N as usize, hbit);
     cpu.af.set_lsb(flags);
 }
 
+pub fn opx0E(cpu: &mut Cpu, mmu: &mut Mmu) {
+    cpu.bc &= 0x00FF;
+    cpu.bc |= (cpu.immediate_u8(mmu) as u16) << 8;
+}
+
+pub fn opx3E(cpu: &mut Cpu, mmu: &mut Mmu) {
+    let val = cpu.immediate_u8(mmu);
+    cpu.af.set_msb(val)
+}
