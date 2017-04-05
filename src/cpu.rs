@@ -44,14 +44,12 @@ impl Cpu {
         self.pc += operation.size;
     }
     fn get_operation(&self, mmu: &mut Mmu) -> Operation {
-        let first = mmu.read(self.pc);
-        let mut cb = false;
+        let first = mmu.read(self.pc) as u16;
         let code = match mmu.read(self.pc) {
-            0xCB => { cb = true; mmu.read(self.pc + 1) },
+            0xCB => { first << 8 | mmu.read(self.pc + 1) as u16 },
             _ => first
         };
-        println!("{}{}", code, cb);
-        get_operation(code, cb)
+        get_operation(code)
     }
     pub fn flags(&self) -> u8 {
         self.af.get_lsb()
