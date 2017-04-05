@@ -1,8 +1,8 @@
 pub mod flag {
-    pub const Z: usize = 7;
-    pub const N: usize = 6;
-    pub const H: usize = 5;
-    pub const C: usize = 4;
+    pub const Z: usize = 7; // Zero Flag - Set to 1 if result of operation = 0
+    pub const N: usize = 6; // Negative Flag - Used for signed arithmetic
+    pub const H: usize = 5; // Half Carry Flag
+    pub const C: usize = 4; // Carry Flag
 }
 
 
