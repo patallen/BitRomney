@@ -30,6 +30,10 @@ impl Cpu {
             counter: 0,
         }
     }
+    fn print_regs(&self) {
+        println!("BC: 0x{:04X} | DE: 0x{:04X} | HC: 0x{:04X} | SP: 0x{:04X} | PC: 0x{:04X} | AF: 0x{:04X}",
+                 self.bc, self.de, self.hl, self.sp, self.pc, self.af)
+    }
     pub fn cycle(&mut self, mmu: &mut Mmu) {
         let operation = self.get_operation(mmu);
 
@@ -40,6 +44,7 @@ impl Cpu {
     }
     fn handle_operation(&mut self, operation: Operation, mmu: &mut Mmu) {
         println!("{:?}", operation);
+        self.print_regs();
         (operation.func)(self, mmu);
         self.pc += operation.size;
     }
