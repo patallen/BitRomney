@@ -59,4 +59,12 @@ impl Cpu {
     pub fn flags(&self) -> u8 {
         self.af.get_lsb()
     }
+    pub fn immediate_u16(&self, mmu: &Mmu) -> u16 {
+        let a = mmu.read(self.pc + 1);
+        let b = mmu.read(self.pc + 2);
+        ((b as u16) << 8) | a as u16
+    }
+    pub fn immediate_u8(&self, mmu: &Mmu) -> u8 {
+        mmu.read(self.pc + 1)
+    }
 }
