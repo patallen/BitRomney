@@ -35,18 +35,18 @@ const BOOT_ROM: [u8; 0x100] = [
 ];
 
 pub struct Mmu  {
-	rom:	Rom,
+	rom:	  Rom,
 	bios: 	Box<[u8]>,
 	vram: 	Box<[u8]>,
 	sram: 	Box<[u8]>,
 	wramo: 	Box<[u8]>,
 	wramx: 	Box<[u8]>,
 	echo: 	Box<[u8]>,
-	oam: 	Box<[u8]>,
+	oam: 	  Box<[u8]>,
 	hram: 	Box<[u8]>,
-	io: 	Box<[u8]>,
+	io: 	  Box<[u8]>,
 	in_bios:bool,
-	ie: 	u8,
+	ie: 	  u8,
 }
 
 // pub struct Interconnect {
@@ -66,11 +66,11 @@ impl Mmu {
 			wramo: 	 Box::new([0; 0x1000]),
 			wramx: 	 Box::new([0; 0x1000]),
 			echo: 	 Box::new([0; 0x1000]),
-			oam: 	 Box::new([0; 0xa0]),
+			oam: 	   Box::new([0; 0xa0]),
 			hram: 	 Box::new([0; 0x80]),
-			io: 	 Box::new([0; 0x80]),
+			io: 	   Box::new([0; 0x80]),
 			in_bios: true,
-			ie: 	 0,
+			ie: 	   0,
 		}
 	}
 	pub fn read(&self, address: usize) -> u8 {

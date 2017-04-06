@@ -1,13 +1,16 @@
+#[allow(non_snake_case)]
+#[allow(unused_variables)]
+mod operations;
+
 mod rom;
 mod cpu;
 mod mmu;
 mod bitty;
 mod gameboy;
 mod registers;
-mod operations;
 
 
-use rom::Rom;
+
 use gameboy::Gameboy;
 
 

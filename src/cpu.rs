@@ -1,12 +1,10 @@
 use std::thread;
 use std::time::Duration;
 
-use rom::Rom;
 use mmu::Mmu;
 use registers::{Registers, Reg};
 use operations::{get_operation, Operation};
 
-use bitty::LittleEndian;
 
 pub struct Cpu {
     pub regs: Registers,
@@ -28,12 +26,12 @@ impl Cpu {
 
         self.handle_operation(operation, mmu);
 
-        let duration = Duration::new(1, 0);
+        let duration = Duration::new(0, 500_000_000);
         thread::sleep(duration);
     }
     fn handle_operation(&mut self, operation: Operation, mmu: &mut Mmu) {
-        println!("{:?}", operation);
-        println!("{:?}", self.regs);
+        println!("PC: {:04X} :: {:?}", self.pc, operation);
+        println!("  --> {:?}", self.regs);
         (operation.func)(self, mmu);
         self.pc += operation.size;
     }
