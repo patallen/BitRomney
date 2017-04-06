@@ -88,6 +88,12 @@ impl Registers {
             _ => panic!("Cannot pass a 16-bit register to 'get_u8'"),
        };
     }
+    pub fn inc_sp(&mut self) {
+        self.sp -= 1;  // "Increment is subraction because the stack is top-down"
+    }
+    pub fn dec_sp(&mut self) {
+        self.sp += 1;  // "Decrement is addition because the stack is top-down"
+    }
 }
 
 impl fmt::Debug for Registers {
