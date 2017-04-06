@@ -2,6 +2,7 @@ use std::fmt;
 
 use cpu::Cpu;
 use mmu::Mmu;
+use registers::Reg;
 
 use bitty::{flag, LittleEndian, BitFlags};
 
@@ -63,6 +64,10 @@ pub fn get_operation(code: u16) -> Operation {
                 0x0F => Operation::new(code, opxAF, 1, 4, "XOR A, A"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
+            0xE0 => match lcode {
+                0x02 => Operation::new(code, opxE2, 2, 8, "LD (C), A"),
+                _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
+            },
             _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
         },
         0xCB => match scode {   // CB Prefix
@@ -94,33 +99,51 @@ pub fn opx20(cpu: &mut Cpu, mmu: &mut Mmu) {
 
 }
 pub fn opx21(cpu: &mut Cpu, mmu: &mut Mmu) {
-    cpu.hl = cpu.immediate_u16(mmu);
+    let new = cpu.immediate_u16(mmu);
+    cpu.regs.set_u16(Reg::HL, new);
 }
+
 pub fn opx32(cpu: &mut Cpu, mmu: &mut Mmu) {
-    cpu.hl = cpu.hl.wrapping_sub(cpu.af.get_msb().into());
+    let hl = cpu.regs.get_u16(Reg::HL);
+    let new = hl.wrapping_sub(cpu.regs.get_u8(Reg::A) as u16);
+    cpu.regs.set_u16(Reg::HL, new);
 }
 pub fn opx31(cpu: &mut Cpu, mmu: &mut Mmu) {
-    cpu.sp = cpu.immediate_u16(mmu);
+    let new = cpu.immediate_u16(mmu);
+    cpu.regs.set_u16(Reg::SP, new);
 }
 pub fn opxAF(cpu: &mut Cpu, mmu: &mut Mmu) {
-    cpu.af &= 0xFF00;
+    let new = cpu.regs.get_u16(Reg::AF) & 0xFF00;
+    cpu.regs.set_u16(Reg::AF, new);
 }
 
 pub  fn cbx7C(cpu: &mut Cpu, mmu: &mut Mmu) {
     // Test bit 7 in register H & if set, set z to 1
     // always set flags N=0 and H=1
     let mut flags = cpu.flags();
-    let hbit = cpu.hl.get_msb().get_bit(7);
+    let hbit = cpu.regs.get_u8(Reg::H).get_bit(7);
     flags.set_bit(flag::N as usize, hbit);
-    cpu.af.set_lsb(flags);
+    cpu.regs.set_u8(Reg::F, flags);
 }
 
 pub fn opx0E(cpu: &mut Cpu, mmu: &mut Mmu) {
-    cpu.bc &= 0x00FF;
-    cpu.bc |= (cpu.immediate_u8(mmu) as u16) << 8;
+    let next = cpu.immediate_u8(mmu);
+    cpu.regs.set_u8(Reg::C, next);
 }
 
 pub fn opx3E(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // load A, d8
     let val = cpu.immediate_u8(mmu);
-    cpu.af.set_msb(val)
+    cpu.regs.set_u8(Reg::A, val);
+}
+
+pub fn opxE2(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD (C), A (LD the value of A into location specified in C)
+    let c = cpu.regs.get_u8(Reg::C);
+    let a = cpu.regs.get_u8(Reg::A);
+    mmu.write(c as usize, a);
+}
+
+pub fn gload(cpu: &mut Cpu, mmu: &mut Mmu) {
+
 }

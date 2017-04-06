@@ -1,9 +1,10 @@
 mod rom;
 mod cpu;
 mod mmu;
-mod gameboy;
-mod operations;
 mod bitty;
+mod gameboy;
+mod registers;
+mod operations;
 
 
 use rom::Rom;
