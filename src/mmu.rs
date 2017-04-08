@@ -49,13 +49,6 @@ pub struct Mmu  {
 	ie: 	  u8,
 }
 
-// pub struct Interconnect {
-// 	rom: Rom,
-// 	bios: Box<[u8]>,
-// 	gpu: Gpu,
-// 	sram: Box<[u8]>,
-
-// }
 impl Mmu {
 	pub fn new(rom: Rom) -> Mmu {
 		Mmu {
