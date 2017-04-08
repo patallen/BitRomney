@@ -1,11 +1,3 @@
-pub mod flag {
-    pub const Z: usize = 7; // Zero Flag - Set to 1 if result of operation = 0
-    pub const N: usize = 6; // Negative Flag - Used for signed arithmetic
-    pub const H: usize = 5; // Half Carry Flag
-    pub const C: usize = 4; // Carry Flag
-}
-
-
 pub trait LittleEndian {
     fn get_msb(&self) -> u8;
     fn get_lsb(&self) -> u8;
@@ -60,7 +52,7 @@ pub trait BitFlags {
 }
 
 impl BitFlags for u8 {
-    fn get_bit(&self, bitno: usize) -> u8 { (*self << bitno) & 0b1 }
+    fn get_bit(&self, bitno: usize) -> u8 { (*self >> bitno) & 0b1 }
 
     fn set_bit(&mut self, bitno: usize, bit: u8) {
         let bit = match bit {

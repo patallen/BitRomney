@@ -17,7 +17,7 @@ impl Rom {
 		let filename = filepath.to_string();
 		let mut file = File::open(filepath).unwrap();
 		let mut data: Vec<u8> = Vec::new();
-		file.read_to_end(&mut data);
+		file.read_to_end(&mut data).unwrap();
 
 		Rom {
 			data: data,

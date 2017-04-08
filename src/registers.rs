@@ -1,92 +1,102 @@
 use std::fmt;
-use bitty::LittleEndian;
+use bitty::{LittleEndian, BitFlags};
 
 
-pub enum Reg {
-    BC,
-    DE,
-    HL,
-    SP,
-    AF,
-    B,
-    C,
-    D,
-    E,
-    H,
-    L,
-    S,
-    P,
-    A,
-    F,
+pub struct FlagRegister {
+    pub z: bool,
+    pub n: bool,
+    pub h: bool,
+    pub c: bool,
 }
 
+impl FlagRegister {
+    pub fn new() -> FlagRegister {
+        FlagRegister {
+            z: false,
+            n: false,
+            h: false,
+            c: false,
+        }
+    }
+    pub fn as_u8(&self) -> u8 {
+        let mut flags: u8 = 0;
+        flags.set_bit(7, self.z as u8);
+        flags.set_bit(6, self.n as u8);
+        flags.set_bit(5, self.h as u8);
+        flags.set_bit(4, self.c as u8);
+        flags
+    }
+}
+
+impl fmt::Debug for FlagRegister {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "(Z)ero: {}  |  (N)egative: {}  |  (H)alf Carry: {}  |  (C)arry: {}",
+               self.z as u8, self.n as u8, self.h as u8, self.c as u8)
+    }
+}
 pub struct Registers {
-    bc: u16,
-    de: u16,
-    hl: u16,
-    sp: u16,
-    af: u16,
+    pub b: u8,
+    pub c: u8,
+    pub d: u8,
+    pub e: u8,
+    pub h: u8,
+    pub l: u8,
+    pub a: u8,
+    pub flags: FlagRegister,
+    pub sp: usize,
+    pub pc: usize,
 }
 
 impl Registers {
     pub fn new() -> Registers {
         Registers {
-            bc: 0,
-            de: 0,
-            hl: 0,
+            b: 0,
+            c: 0,
+            d: 0,
+            e: 0,
+            h: 0,
+            l: 0,
+            a: 0,
+            flags: FlagRegister::new(),
             sp: 0,
-            af: 0,
+            pc: 0,
         }
     }
-    pub fn get_u16(&self, register: Reg) -> u16 {
-        match register {
-            Reg::BC => { self.bc },
-            Reg::DE => { self.de },
-            Reg::HL => { self.hl },
-            Reg::SP => { self.sp },
-            Reg::AF => { self.af },
-            _ => panic!("Cannot pass an 8-bit register to 'get_u16'"),
-        }
+    pub fn bc(&self) -> u16 {
+        let mut bc: u16 = 0;
+        bc.set_msb(self.b);
+        bc.set_lsb(self.c);
+        bc
     }
-    pub fn get_u8(&self, register: Reg) -> u8 {
-       match register {
-            Reg::B => { self.bc.get_msb() },
-            Reg::C => { self.bc.get_lsb() },
-            Reg::D => { self.de.get_msb() },
-            Reg::E => { self.de.get_lsb() },
-            Reg::H => { self.hl.get_msb() },
-            Reg::L => { self.hl.get_lsb() },
-            Reg::S => { self.sp.get_msb() },
-            Reg::P => { self.sp.get_lsb() },
-            Reg::A => { self.af.get_msb() },
-            Reg::F => { self.af.get_lsb() },
-            _ => panic!("Cannot pass a 16-bit register to 'get_u8'"),
-       }
+    pub fn de(&self) -> u16 {
+        let mut de: u16 = 0;
+        de.set_msb(self.d);
+        de.set_lsb(self.e);
+        de
     }
-    pub fn set_u16(&mut self, register: Reg, value: u16) {
-        match register {
-            Reg::BC => { self.bc = value },
-            Reg::DE => { self.de = value },
-            Reg::HL => { self.hl = value },
-            Reg::SP => { self.sp = value },
-            Reg::AF => { self.af = value },
-            _ => panic!("Cannot pass an 8-bit register to 'get_u16'"),
-        };
+    pub fn hl(&self) -> u16 {
+        let mut hl: u16 = 0;
+        hl.set_msb(self.h);
+        hl.set_lsb(self.l);
+        hl
     }
-    pub fn set_u8(&mut self, register: Reg, value: u8) {
-       match register {
-            Reg::B => { self.bc.set_msb(value) },
-            Reg::C => { self.bc.set_lsb(value) },
-            Reg::D => { self.de.set_msb(value) },
-            Reg::E => { self.de.set_lsb(value) },
-            Reg::H => { self.hl.set_msb(value) },
-            Reg::L => { self.hl.set_lsb(value) },
-            Reg::S => { self.sp.set_msb(value) },
-            Reg::P => { self.sp.set_lsb(value) },
-            Reg::A => { self.af.set_msb(value) },
-            Reg::F => { self.af.set_lsb(value) },
-            _ => panic!("Cannot pass a 16-bit register to 'get_u8'"),
-       };
+    pub fn af(&self) -> u16 {
+        let mut af: u16 = 0;
+        af.set_msb(self.a);
+        af.set_lsb(self.flags.as_u8());
+        af
+    }
+    pub fn set_bc(&mut self, val: u16) {
+        self.b = val.get_msb();
+        self.c = val.get_lsb();
+    }
+    pub fn set_de(&mut self, val: u16) {
+        self.d = val.get_msb();
+        self.e = val.get_lsb();
+    }
+    pub fn set_hl(&mut self, val: u16) {
+        self.h = val.get_msb();
+        self.l = val.get_lsb();
     }
     pub fn inc_sp(&mut self) {
         self.sp -= 1;  // "Increment is subraction because the stack is top-down"
@@ -98,6 +108,7 @@ impl Registers {
 
 impl fmt::Debug for Registers {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "BC: 0x{:04X} | DE: 0x{:04X} | HC: 0x{:04X} | SP: 0x{:04X} | AF: 0x{:04X}", self.bc, self.de, self.hl, self.sp, self.af)
+        write!(f, "A:{:02X} | B:{:02X} | C:{:02X} | D:{:02X} | E:{:02X} | H:{:02X} | L:{:02X} | SP:{:04X}\n{:?}\n",
+               self.a, self.b, self.c, self.d, self.e, self.h, self.l, self.sp, self.flags)
     }
 }

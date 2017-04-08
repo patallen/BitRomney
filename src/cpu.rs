@@ -2,7 +2,7 @@ use std::thread;
 use std::time::Duration;
 
 use mmu::Mmu;
-use registers::{Registers, Reg};
+use registers::{Registers};
 use operations::{get_operation, Operation};
 
 
@@ -42,9 +42,6 @@ impl Cpu {
             _ => first
         };
         get_operation(code)
-    }
-    pub fn flags(&self) -> u8 {
-        self.regs.get_u8(Reg::F)
     }
     pub fn immediate_u16(&self, mmu: &Mmu) -> u16 {
         let a = mmu.read(self.pc + 1);
