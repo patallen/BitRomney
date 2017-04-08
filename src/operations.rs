@@ -6,7 +6,6 @@ use registers::Reg;
 
 use bitty::{flag, LittleEndian, BitFlags};
 
-
 pub struct Operation {
     pub dis: &'static str,
     pub code: u16,
@@ -49,6 +48,7 @@ pub fn get_operation(code: u16) -> Operation {
             },
             0x10 => match lcode {
                 0x01 => Operation::new(code, opx11, 3, 12,  "LD DE, d16"),
+                0x07 => Operation::new(code, opx17, 1, 4,  "RLA"),
                 0x0A => Operation::new(code, opx1A, 1, 8,  "LD A, (DE)"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
@@ -72,10 +72,12 @@ pub fn get_operation(code: u16) -> Operation {
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             0xA0 => match lcode {
+                0x0F => Operation::new(code, opxAF, 1, 4, "AND B"),
                 0x0F => Operation::new(code, opxAF, 1, 4, "XOR A, A"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             0xC0 => match lcode {
+                0x01 => Operation::new(code, opxC1, 1, 12, "POP BC"),
                 0x05 => Operation::new(code, opxC5, 1, 16, "PUSH BC"),
                 0x0D => Operation::new(code, opxCD, 3, 24, "CALL a16"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
@@ -206,6 +208,32 @@ pub fn opxC5(cpu: &mut Cpu, mmu: &mut Mmu) {
     cpu.regs.inc_sp();
 }
 
+pub fn opxC1(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // POP BC
+    let b = mmu.read(cpu.regs.get_u16(Reg::SP) as usize);
+    cpu.regs.dec_sp();
+    let c = mmu.read(cpu.regs.get_u16(Reg::SP) as usize);
+    cpu.regs.dec_sp();
+    let mut bc: u16 = 0;
+    bc.set_msb(b);
+    bc.set_lsb(c);
+    cpu.regs.set_u16(Reg::BC, bc);
+}
+
+pub fn opx17(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // RLA
+    // Rotate A left one bit
+    let mut rega = cpu.regs.get_u8(Reg::A);
+    let msb = rega >> 7;
+    let mut flags = cpu.flags();
+    let carry = flags.get_bit(flag::C);
+    rega = rega << 1;
+    rega |= carry;
+    flags.set_bit(flag::C, msb);
+    cpu.regs.set_u8(Reg::A, rega);
+    cpu.regs.set_u8(Reg::F, flags);
+}
+
 pub  fn cbx7C(cpu: &mut Cpu, mmu: &mut Mmu) {
     let mut flags = cpu.flags();
     let hbit = cpu.regs.get_u8(Reg::H).get_bit(7);
@@ -215,17 +243,21 @@ pub  fn cbx7C(cpu: &mut Cpu, mmu: &mut Mmu) {
 
 pub  fn cbx11(cpu: &mut Cpu, mmu: &mut Mmu) {
     // RL C
-    // Shift C one bit to the left
-    // bit 0 of C is set to the carry flag
-    // the carry flag is set to the MSB of the original C
+    // Rotate register C one bit to the left
+    // MSB goes into carry flag
+    // cary flag goes into lsb of C
+    // if the result is zero, set the zero flag to 1 else 0
+    let mut regc = cpu.regs.get_u8(Reg::C);
+    let msb = regc >> 7;
     let mut flags = cpu.flags();
-    let c = cpu.regs.get_u8(Reg::C);
-    let msb = c >> 7;
-    let carry = flags.get_bit(flag::C as usize);
-    let res = (c << 1) & msb;
-    cpu.regs.set_u8(Reg::C, res);
-    flags.set_bit(flag::C, carry);
-    flags.set_bit(flag::Z, (res == 0) as u8);
+    let carry = flags.get_bit(flag::C);
+    regc = regc << 1;
+    regc |= carry;
+    flags.set_bit(flag::C, msb);
+    cpu.regs.set_u8(Reg::C, regc);
+    match regc {
+        0 => { flags.set_bit(flag::Z, 1)},
+        _ => { flags.set_bit(flag::Z, 0)},
+    };
     cpu.regs.set_u8(Reg::F, flags);
-
 }
