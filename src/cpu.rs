@@ -65,7 +65,7 @@ impl Cpu {
         let sp = self.regs.sp;
         println!("(PC:{:04X}::SP:{:04X}) | {:?}", self.regs.pc, self.regs.sp, operation);
         print!("REGS: {:?}", self.regs);
-        print!("STACK: ({:04X}): {:04X}", sp, mmu.read(sp));
+        print!("STACK: ({:02X}): {:02X}", sp, mmu.read(sp));
         if sp < 0xFFFE {
             print!(" | ({:04X}): {:04X}", sp + 1, mmu.read(sp + 1));
             if sp < 0xFFFD {

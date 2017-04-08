@@ -147,7 +147,7 @@ pub fn opx23(cpu: &mut Cpu, mmu: &mut Mmu) {
     // INC HL
     // Increment HL by one.
     let new = cpu.regs.hl().wrapping_add(1);
-    cpu.regs.set_hl(1);
+    cpu.regs.set_hl(new);
 }
 
 pub fn opx32(cpu: &mut Cpu, mmu: &mut Mmu) {
