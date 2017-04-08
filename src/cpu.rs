@@ -40,6 +40,11 @@ impl Cpu {
         println!("PC: {:04X} :: {:?}", self.regs.pc, operation);
         println!("  --> {:?}", self.regs);
         (operation.func)(self, mmu);
+        let sp = self.regs.sp;
+        if sp < 0xFFFE {
+            println!("CUR: {:04X}, +1: {:04X}, +2 {:04X}",
+                     mmu.read(sp), mmu.read(sp + 1), mmu.read(sp + 2));
+        }
         self.regs.pc += operation.size;
     }
     fn get_operation(&self, mmu: &mut Mmu) -> Operation {
