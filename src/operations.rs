@@ -2,6 +2,7 @@ use std::fmt;
 
 use cpu::Cpu;
 use mmu::Mmu;
+use registers::{FlagRegister};
 
 use bitty::{LittleEndian, BitFlags};
 
@@ -342,28 +343,39 @@ pub fn opxCE(cpu: &mut Cpu, mmu: &mut Mmu) {
     // Z 0 H C
 }
 pub  fn cbx7C(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // BIT 7, H
-    // Clear the zero flag if bit 7 of register H == 1
-    // set N flag to 0 and H flag to 1
-    cpu.regs.flags.z = cpu.regs.h.get_bit(7) == 0;
-    cpu.regs.flags.n = false;
-    cpu.regs.flags.h = true;
+    let reg = &mut cpu.regs.h;
+    let flags = &mut cpu.regs.flags;
+    bit_x_n(7, reg, flags);
 }
 
 pub  fn cbx11(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // RL C
-    // Rotate register C one bit to the left
-    // MSB goes into carry flag
-    // carry flag goes into lsb of C
-    // if the result is zero, set the zero flag to 1 else 0
-    let msb = cpu.regs.c >> 7;
-    let carry = cpu.regs.flags.c as u8;
-    cpu.regs.c = cpu.regs.c << 1;
-    cpu.regs.c |= carry;
-    cpu.regs.flags.c = msb == 1;
+    let reg = &mut cpu.regs.c;
+    let flags = &mut cpu.regs.flags;
+    rl_n(reg, flags);
+}
 
-    cpu.regs.flags.z = match cpu.regs.c {
+fn rl_n(reg: &mut u8, flags: &mut FlagRegister) {
+    // RL n
+    // Rotate register n one bit to the left
+    // MSB goes into carry flag
+    // carry flag goes into lsbit of C
+    // if the result is zero, set the zero flag to 1 else 0
+    let msb = *reg >> 7;
+    let carry = flags.c as u8;
+    *reg = *reg << 1;
+    *reg |= carry;
+    flags.c = msb == 1;
+    flags.z = match *reg {
         0 => true,
         _ => false,
     };
+}
+
+fn bit_x_n(bit_no: usize, reg: &mut u8, flags: &mut FlagRegister) {
+    // BIT x, n
+    // Clear the zero flag if bit x of register n == 1
+    // set N flag to 0 and H flag to 1
+    flags.z = reg.get_bit(bit_no) == 0;
+    flags.n = false;
+    flags.h = true;
 }

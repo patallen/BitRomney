@@ -5,6 +5,7 @@ use std::io;
 use mmu::Mmu;
 use registers::{Registers};
 use operations::{get_operation, Operation};
+use bitty::LittleEndian;
 
 
 pub struct Cpu {
