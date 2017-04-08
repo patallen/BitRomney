@@ -76,6 +76,10 @@ pub fn get_operation(code: u16) -> Operation {
                 0x07 => Operation::new(code, opx77, 1, 8, "LD (HL), A"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
+            0x90 => match lcode {
+                0x05 => Operation::new(code, opx95, 1, 4, "SUB L"),
+                _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
+            },
             0xA0 => match lcode {
                 0x00 => Operation::new(code, opxA0, 1, 4, "AND B"),
                 0x07 => Operation::new(code, opxA7, 1, 4, "AND A"),
@@ -85,7 +89,7 @@ pub fn get_operation(code: u16) -> Operation {
             0xC0 => match lcode {
                 0x01 => Operation::new(code, opxC1, 1, 12, "POP BC"),
                 0x05 => Operation::new(code, opxC5, 1, 16, "PUSH BC"),
-                0x09 => Operation::new(code, opxC9, 1, 16, "RET"),
+                0x09 => Operation::new(code, opxC9, 0, 16, "RET"),
                 0x0D => Operation::new(code, opxCD, 3, 24, "CALL a16"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
@@ -158,6 +162,7 @@ pub fn opx32(cpu: &mut Cpu, mmu: &mut Mmu) {
 pub fn opx31(cpu: &mut Cpu, mmu: &mut Mmu) {
     // LD SP, d16
     // Load immediate 16-bit into Stack Pointer
+    let pc = cpu.regs.pc;
     let sp = cpu.immediate_u16(mmu);
     cpu.regs.sp = sp as usize;
 }
@@ -205,6 +210,20 @@ pub fn opx77(cpu: &mut Cpu, mmu: &mut Mmu) {
     let hl = cpu.regs.hl() as usize;
     mmu.write(hl, cpu.regs.a);
 }
+pub fn opx95(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD (HL), A
+    // Subtract the value of L from A
+    // Load value of register A into mem at address specified by register HL
+    // Set zero based on result
+    // set Register n to 1
+    // Set register H and C as required
+    let a = cpu.regs.l;
+    cpu.regs.a = cpu.regs.a.wrapping_sub(a);
+    cpu.regs.flags.z = cpu.regs.a == 0;
+    cpu.regs.flags.n = true;
+    cpu.broken = true;
+}
+
 pub fn opxE0(cpu: &mut Cpu, mmu: &mut Mmu) {
     // LDH (a8), A
     // Load the value of register A into mem at 0xFF00 + immediate 8-bit
@@ -256,9 +275,9 @@ pub fn opxC5(cpu: &mut Cpu, mmu: &mut Mmu) {
     // Put both bytes of BC onto the stack
     // Increment the SP by two
     let bc = cpu.regs.bc();
-    mmu.write(cpu.regs.sp, bc.get_msb());
+    mmu.write(cpu.regs.sp, cpu.regs.b);
     cpu.regs.inc_sp();
-    mmu.write(cpu.regs.sp, bc.get_lsb());
+    mmu.write(cpu.regs.sp, cpu.regs.c);
     cpu.regs.inc_sp();
 }
 
@@ -338,10 +357,16 @@ pub fn opxC9(cpu: &mut Cpu, mmu: &mut Mmu) {
     word.set_lsb(lsb);
     cpu.regs.pc = word as usize;
 }
-pub fn opxCE(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // ADC A, d8
-    // Z 0 H C
-}
+// pub fn opxCE(cpu: &mut Cpu, mmu: &mut Mmu) {
+//     // ADC A, d8
+//     // Z 0 H C
+//     let ac = cpu.regs.flags.c as u8 + cpu.immediate_u8(mmu);
+//     let a = cpu.regs.a;
+//     let hc = (((a &0xF) + (ac &0xF)) & 0x10) == 0x10;
+//     cpu.regs.a = a.wrapping_add(ac);
+//     cpu.regs.flags.z = cpu.regs.a == 0;
+//     cpu.regs.flags.n = false;
+// }
 pub  fn cbx7C(cpu: &mut Cpu, mmu: &mut Mmu) {
     let reg = &mut cpu.regs.h;
     let flags = &mut cpu.regs.flags;

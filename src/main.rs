@@ -15,7 +15,7 @@ use gameboy::Gameboy;
 
 
 fn main() {
-	let filename = "/Users/patallen/Code/Emulators/GameRoy/resources/pokemon_red.gb";
+	let filename = "/Users/patallen/Code/Emulators/GameRoy/resources/tetris1.1.gb";
 	let mut gb = Gameboy::new(filename);
 	gb.run();
 }
