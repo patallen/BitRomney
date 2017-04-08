@@ -23,29 +23,24 @@ impl Cpu {
             broken: false
         }
     }
-    pub fn cycle(&mut self, mmu: &mut Mmu) {
-        let operation = self.get_operation(mmu);
-        if self.regs.pc == 0x000F {
-            self.broken = true
-        }
+    fn handle_debug(&mut self, operation: &Operation, mmu: &Mmu) {
         let mut input = String::new();
         if self.broken {
             io::stdin().read_line(&mut input).unwrap();
         }
+        if self.regs.pc == 0x000C {
+            self.broken = true;
+        }
+        self.print_info(&operation, mmu);
+    }
+    pub fn cycle(&mut self, mmu: &mut Mmu) {
+        let operation = self.get_operation(mmu);
+        self.handle_debug(&operation, mmu);
         self.handle_operation(operation, mmu);
 
-        let duration = Duration::new(0, 10_000_000);
-        thread::sleep(duration);
     }
     fn handle_operation(&mut self, operation: Operation, mmu: &mut Mmu) {
-        println!("PC: {:04X} :: {:?}", self.regs.pc, operation);
-        println!("  --> {:?}", self.regs);
         (operation.func)(self, mmu);
-        let sp = self.regs.sp;
-        if sp < 0xFFFE {
-            println!("CUR: {:04X}, +1: {:04X}, +2 {:04X}",
-                     mmu.read(sp), mmu.read(sp + 1), mmu.read(sp + 2));
-        }
         self.regs.pc += operation.size;
     }
     fn get_operation(&self, mmu: &mut Mmu) -> Operation {
@@ -57,11 +52,26 @@ impl Cpu {
         get_operation(code)
     }
     pub fn immediate_u16(&self, mmu: &Mmu) -> u16 {
-        let a = mmu.read(self.regs.pc + 1);
-        let b = mmu.read(self.regs.pc + 2);
-        ((b as u16) << 8) | a as u16
+        let pc = self.regs.pc;
+        let mut ret: u16 = 0;
+        ret.set_msb(mmu.read(pc + 1));
+        ret.set_lsb(mmu.read(pc + 2));
+        ret
     }
     pub fn immediate_u8(&self, mmu: &Mmu) -> u8 {
         mmu.read(self.regs.pc + 1)
+    }
+    fn print_info(&self, operation: &Operation, mmu: &Mmu) {
+        let sp = self.regs.sp;
+        println!("(PC:{:04X}::SP:{:04X}) | {:?}", self.regs.pc, self.regs.sp, operation);
+        print!("REGS: {:?}", self.regs);
+        print!("STACK: ({:04X}): {:04X}", sp, mmu.read(sp));
+        if sp < 0xFFFE {
+            print!(" | ({:04X}): {:04X}", sp + 1, mmu.read(sp + 1));
+            if sp < 0xFFFD {
+                print!(" | ({:04X}): {:04X}", sp + 2, mmu.read(sp + 2));
+            }
+        }
+        print!("\n");
     }
 }

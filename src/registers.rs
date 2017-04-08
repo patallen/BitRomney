@@ -30,7 +30,7 @@ impl FlagRegister {
 
 impl fmt::Debug for FlagRegister {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "(Z)ero: {}  |  (N)egative: {}  |  (H)alf Carry: {}  |  (C)arry: {}",
+        write!(f, "(Z): {} | (N)eg: {} | (H)C: {} | (C): {}",
                self.z as u8, self.n as u8, self.h as u8, self.c as u8)
     }
 }
@@ -108,7 +108,7 @@ impl Registers {
 
 impl fmt::Debug for Registers {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "A:{:02X} | B:{:02X} | C:{:02X} | D:{:02X} | E:{:02X} | H:{:02X} | L:{:02X} | SP:{:04X}\n{:?}\n",
-               self.a, self.b, self.c, self.d, self.e, self.h, self.l, self.sp, self.flags)
+        write!(f, "{:?}\nA:{:02X} | B:{:02X} | C:{:02X} | D:{:02X} | E:{:02X} | H:{:02X} | L:{:02X}\n",
+               self.flags, self.a, self.b, self.c, self.d, self.e, self.h, self.l)
     }
 }
