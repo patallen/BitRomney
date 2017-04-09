@@ -51,6 +51,7 @@ pub fn get_operation(code: u16) -> Operation {
             },
             0x10 => match lcode {
                 0x01 => Operation::new(code, opx11, 3, 12,  "LD DE, d16"),
+                0x03 => Operation::new(code, opx13, 1, 8,  "INC DE"),
                 0x07 => Operation::new(code, opx17, 1, 4,  "RLA"),
                 0x0A => Operation::new(code, opx1A, 1, 8,  "LD A, (DE)"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
@@ -74,6 +75,7 @@ pub fn get_operation(code: u16) -> Operation {
             },
             0x70 => match lcode {
                 0x07 => Operation::new(code, opx77, 1, 8, "LD (HL), A"),
+                0x0B => Operation::new(code, opx7B, 1, 4, "LD A, E"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             0x90 => match lcode {
@@ -90,12 +92,16 @@ pub fn get_operation(code: u16) -> Operation {
                 0x01 => Operation::new(code, opxC1, 1, 12, "POP BC"),
                 0x05 => Operation::new(code, opxC5, 1, 16, "PUSH BC"),
                 0x09 => Operation::new(code, opxC9, 0, 16, "RET"),
-                0x0D => Operation::new(code, opxCD, 3, 24, "CALL a16"),
+                0x0D => Operation::new(code, opxCD, 0, 24, "CALL a16"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             0xE0 => match lcode {
                 0x00 => Operation::new(code, opxE0, 2, 12, "LDH (a8), A"),
                 0x02 => Operation::new(code, opxE2, 1, 8, "LD (C), A"),  // TODO: Check Size again ( one site says 1 other, 2)
+                _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
+            },
+            0xF0 => match lcode {
+                0x0E => Operation::new(code, opxFE, 2, 8, "CP d8"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
@@ -143,13 +149,24 @@ pub fn opx22(cpu: &mut Cpu, mmu: &mut Mmu) {
     cpu.regs.set_hl((addr + 1) as u16);
 }
 
+pub fn opx7B(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD A, E
+    // Load register E into register A
+    // Increment HL
+    cpu.regs.a = cpu.regs.e;
+}
 pub fn opx23(cpu: &mut Cpu, mmu: &mut Mmu) {
     // INC HL
     // Increment HL by one.
     let new = cpu.regs.hl().wrapping_add(1);
     cpu.regs.set_hl(new);
 }
-
+pub fn opx13(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // INC DE
+    // Increment DE by one.
+    let new = cpu.regs.de().wrapping_add(1);
+    cpu.regs.set_de(new);
+}
 pub fn opx32(cpu: &mut Cpu, mmu: &mut Mmu) {
     // LD (HL-), A
     // Load the value of register A into mem address HL
@@ -248,13 +265,13 @@ pub fn opxCD(cpu: &mut Cpu, mmu: &mut Mmu) {
     // Set pc to value of immediate 16-bit
     // push both bytes of pc onto the stack
     // increment the sp by two
-    let pc = cpu.regs.pc;
+    let pc = cpu.regs.pc + 3;
     let nn = cpu.immediate_u16(mmu);
     mmu.write(cpu.regs.sp as usize, (pc as u16).get_msb());
     cpu.regs.inc_sp();
     mmu.write(cpu.regs.sp as usize, (pc as u16).get_lsb());
     cpu.regs.inc_sp();
-    cpu.regs.pc = (nn as usize) - 3;
+    cpu.regs.pc = (nn as usize);
 }
 
 pub fn opx4F(cpu: &mut Cpu, mmu: &mut Mmu) {
@@ -356,6 +373,19 @@ pub fn opxC9(cpu: &mut Cpu, mmu: &mut Mmu) {
     word.set_msb(msb);
     word.set_lsb(lsb);
     cpu.regs.pc = word as usize;
+}
+pub fn opxFE(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // CP d8
+    // Compare A with d8
+    // set flags Z, H and C as required
+    // set N flag to 1
+    let a = cpu.regs.a;
+    let d8 = cpu.immediate_u8(mmu);
+    println!("Compare (A: {:02X}) to (d8: 0x{:02X})", a, d8);
+    cpu.regs.flags.z = a == d8;
+    cpu.regs.flags.c = a < d8;
+    cpu.regs.flags.n = true;
+    cpu.regs.flags.h = (((a &0xF) + (d8 &0xF)) & 0x10) == 0x10;
 }
 // pub fn opxCE(cpu: &mut Cpu, mmu: &mut Mmu) {
 //     // ADC A, d8

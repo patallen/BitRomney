@@ -82,7 +82,7 @@ impl Mmu {
 			0xFF00...0xFF7F => self.io[address - 0xFF00],
 			0xFF80...0xFFFE => self.hram[address - 0xFF80],
 			0xFFFF 			    => self.ie,
-			_				        => panic!("{:04X} is and unused address.", address),
+			_				        => panic!("{:04X} is an unused address.", address),
 		}
 	}
 	pub fn write(&mut self, address: usize, byte: u8) {
@@ -101,5 +101,3 @@ impl Mmu {
 		}
 	}
 }
-
-
