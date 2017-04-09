@@ -57,7 +57,7 @@ pub fn get_operation(code: u16) -> Operation {
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             0x20 => match lcode {
-                0x00 => Operation::new(code, opx20, 2, 12, "JR NZ, r8 FUCK"),
+                0x00 => Operation::new(code, opx20, 2, 12, "JR NZ, r8"),
                 0x01 => Operation::new(code, opx21, 3, 12, "LD HL, d16"),
                 0x02 => Operation::new(code, opx22, 3, 12, "LD (HL+), A"),
                 0x03 => Operation::new(code, opx23, 1,  8, "INC HL"),
@@ -238,7 +238,6 @@ pub fn opx95(cpu: &mut Cpu, mmu: &mut Mmu) {
     cpu.regs.a = cpu.regs.a.wrapping_sub(a);
     cpu.regs.flags.z = cpu.regs.a == 0;
     cpu.regs.flags.n = true;
-    cpu.broken = true;
 }
 
 pub fn opxE0(cpu: &mut Cpu, mmu: &mut Mmu) {
@@ -271,7 +270,7 @@ pub fn opxCD(cpu: &mut Cpu, mmu: &mut Mmu) {
     cpu.regs.inc_sp();
     mmu.write(cpu.regs.sp as usize, (pc as u16).get_lsb());
     cpu.regs.inc_sp();
-    cpu.regs.pc = (nn as usize);
+    cpu.regs.pc = nn as usize;
 }
 
 pub fn opx4F(cpu: &mut Cpu, mmu: &mut Mmu) {
@@ -381,7 +380,6 @@ pub fn opxFE(cpu: &mut Cpu, mmu: &mut Mmu) {
     // set N flag to 1
     let a = cpu.regs.a;
     let d8 = cpu.immediate_u8(mmu);
-    println!("Compare (A: {:02X}) to (d8: 0x{:02X})", a, d8);
     cpu.regs.flags.z = a == d8;
     cpu.regs.flags.c = a < d8;
     cpu.regs.flags.n = true;

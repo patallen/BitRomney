@@ -30,7 +30,7 @@ impl FlagRegister {
 
 impl fmt::Debug for FlagRegister {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "(Z): {} | (N)eg: {} | (H)C: {} | (C): {}",
+        write!(f, "Z: {} | N: {} | H: {} | C: {}",
                self.z as u8, self.n as u8, self.h as u8, self.c as u8)
     }
 }
