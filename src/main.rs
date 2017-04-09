@@ -17,5 +17,5 @@ use debugger::Debugger;
 fn main() {
     let filename = "/Users/patallen/Code/Emulators/GameRoy/resources/tetris1.1.gb";
     let mut debugger = Debugger::new(filename);
-	  debugger.start();
+	  debugger.run();
 }

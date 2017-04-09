@@ -12,7 +12,7 @@ pub enum ShowType {
 #[derive(Debug)]
 pub enum SetType {
     Tracepoint,
-    Breakpoint(u16),
+    Breakpoint(usize),
     Register,
     Speed,
 }
@@ -26,14 +26,6 @@ pub enum Command {
     Resume,
     Quit,
     Help,
-}
-
-pub enum DebugMode {
-    Quitting,
-    Running,
-    Restarting,
-    Stepping,
-    Repl,
 }
 
 
@@ -75,7 +67,7 @@ fn _build_breakpoint(parts: &Vec<&str>) -> Result<SetType, &'static str> {
         return Err("Breakpoint requires an address argument.")
     }
     match str_to_u16(parts[1]) {
-        Ok(val) => Ok(SetType::Breakpoint(val)),
+        Ok(val) => Ok(SetType::Breakpoint(val as usize)),
         Err(_) => return Err("Invalid argument for set type.")
     }
 }

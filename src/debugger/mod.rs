@@ -7,6 +7,10 @@ use gameboy::Gameboy;
 use operations::{Operation, get_operation};
 use self::command::{Command, build_step, build_show, build_set, ShowType, SetType};
 
+
+const MEM_DISPLAY_WIDTH: u16 = 16;
+
+
 enum DebugMode {
     Quitting,
     Running,
@@ -17,7 +21,7 @@ enum DebugMode {
 
 pub struct Debugger {
     tracepoints: Vec<u16>,
-    breakpoints: Vec<u16>,
+    breakpoints: Vec<usize>,
     mode: DebugMode,
     gameboy: Gameboy,
     step_distance: u16,
@@ -33,24 +37,21 @@ impl Debugger {
             step_distance: 10,
         }
     }
-    pub fn start(&mut self) {
-        self.run();
-    }
-    fn restart(&mut self) {
-        self.reset();
-        self.mode = DebugMode::Repl;
-    }
-    fn reset(&mut self) {
-    }
     fn cycle(&mut self) {
         self.gameboy.step();
+        self.print();
+        self.check_breakpoints();
+    }
+    fn print(&mut self) {
+        let op = self.next_operation();
+        println!("(PC:{:04X}|SP:{:04X}) :: {:?}",
+                 self.gameboy.cpu.regs.pc, self.gameboy.cpu.regs.sp, op);
+    }
+    fn check_breakpoints(&mut self) {
         let pc = self.gameboy.cpu.regs.pc;
-        let sp  = self.gameboy.cpu.regs.sp;
-        if self.breakpoints.iter().any(|x| *x == pc as u16) {
+        if self.breakpoints.iter().any(|x| *x == pc) {
             self.mode = DebugMode::Repl;
         }
-        let op = self.next_operation();
-        println!("(PC:{:04X}|SP:{:04X}) :: {:?}", pc, sp, op);
     }
     fn step(&mut self) {
         for _ in 0..self.step_distance {
@@ -66,11 +67,11 @@ impl Debugger {
         };
         get_operation(code)
     }
-    fn run(&mut self) {
+    pub fn run(&mut self) {
         loop {
             match self.mode {
                 DebugMode::Repl => self.repl(),
-                DebugMode::Restarting => self.restart(),
+                DebugMode::Restarting => {},
                 DebugMode::Quitting => process::exit(1),
                 DebugMode::Running => self.cycle(),
                 DebugMode::Stepping => self.step(),
@@ -84,10 +85,8 @@ impl Debugger {
         loop {
             print!("gbdb> ");
             stdout().flush().unwrap();
-            let input = read_stdin();
-            let result = parse_input(&input);
 
-            match result {
+            match parse_input(&read_stdin()) {
                 Ok(command) => {self.handle_command(command); break;}
                 Err(error) => {println!("{}", error)}
             };
@@ -137,35 +136,30 @@ impl Debugger {
     fn print_breakpoints(&self) {
     }
     fn print_memory(&self, low: u16, hi: u16) {
-        let l = low / 16 * 16;
-        let h = hi / 16 * 16 + 16;
+        let mem_width = MEM_DISPLAY_WIDTH as usize;
+        let l = low as usize / mem_width * mem_width;
+        let h = hi as usize / mem_width * mem_width + mem_width;
 
-        let mut mems: Vec<u8> = Vec::new();
-        for addr in l..h {
-            mems.push(self.gameboy.mmu.read(addr as usize));
+        let mems = self.gameboy.mmu.read_range(l, h);
+
+        let mut lines: Vec<String> = Vec::new();
+        for (i, ch) in mems.as_slice().chunks(mem_width).enumerate() {
+            let string = ch.into_iter().map(|x| format!("{:02X}", x)).collect::<Vec<_>>().join(" ");
+            let line = format!("0x{:04X} | {}", i * mem_width + l as usize, string);
+            lines.push(line);
         }
-        print!("\n0x**** | ");
-        for x in 0.. 16 {
-            print!("{:02X} ", x);
-        }
-        println!("\n--------------------------------------------------------");
-        for (i, ch) in mems.as_slice().chunks(16).enumerate() {
-            print!("0x{:04X} | ", low + (i * 16) as u16);
-            for x in ch {
-                print!("{:02X} ", x);
-            }
-            print!("\n")
-        }
+        let header = (0..mem_width).into_iter().map(|x| format!("{:02X}", x)).collect::<Vec<_>>().join(" ");
+        println!("       | {}", header);
+        println!("--------------------------------------------------------");
+        println!("{}", lines.join("\n"));
     }
 }
 
 
-
 fn parse_input(text: &str) -> Result<Command, &str> {
     let parts: Vec<&str> = text.split(" ").collect();
-    let cmd = parts[0];
     let next_parts = &parts[1..].to_vec();
-    match cmd {
+    match parts[0] {
         "restart" | "r"           => Ok(Command::Restart),
         "go" | "resume" | "start" => Ok(Command::Resume),
         "exit" | "quit" | "q"     => Ok(Command::Quit),

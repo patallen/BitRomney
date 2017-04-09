@@ -100,4 +100,7 @@ impl Mmu {
 			_				        => {}
 		}
 	}
+    pub fn read_range(&self, low: usize, high: usize) -> Vec<u8> {
+        (low..high).into_iter().map(|x| self.read(x)).collect()
+    }
 }
