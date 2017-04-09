@@ -36,12 +36,35 @@ impl Cpu {
     }
     pub fn immediate_u16(&self, mmu: &Mmu) -> u16 {
         let pc = self.regs.pc;
-        let mut ret: u16 = 0;
-        ret.set_msb(mmu.read(pc + 1));
-        ret.set_lsb(mmu.read(pc + 2));
+        let mut ret: u16 = (mmu.read(pc + 2) as u16) << 8;
+        ret |= mmu.read(pc + 1) as u16;
         ret
     }
     pub fn immediate_u8(&self, mmu: &Mmu) -> u8 {
         mmu.read(self.regs.pc + 1)
     }
+    pub fn stack_pop_u8(&mut self, mmu: &mut Mmu) -> u8 {
+        self.regs.sp += 1;
+        let sp = self.regs.sp;
+        mmu.read(sp)
+    }
+    pub fn stack_push_u8(&mut self, val: u8, mmu: &mut Mmu) {
+        let sp = self.regs.sp;
+        mmu.write(sp, val);
+        self.regs.sp -= 1;
+    }
+    pub fn stack_pop_u16(&mut self, mmu: &mut Mmu) -> u16 {
+        self.regs.sp += 1;
+        let sp = self.regs.sp;
+        let ret = mmu.read_u16(sp);
+        self.regs.sp += 1;
+        ret
+    }
+    pub fn stack_push_u16(&mut self, val: u16, mmu: &mut Mmu) {
+        self.regs.sp -= 1;
+        let sp = self.regs.sp;
+        mmu.write_u16(sp, val);
+        self.regs.sp -= 1;
+    }
+
 }

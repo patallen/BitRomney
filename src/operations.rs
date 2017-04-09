@@ -253,6 +253,7 @@ pub fn opx11(cpu: &mut Cpu, mmu: &mut Mmu) {
     cpu.regs.set_de(d16);
 }
 pub fn opx1A(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // MARK
     // "LD A, (DE)"
     // Load value of memory at address specified in DE into register A
     let addr = mmu.read(cpu.regs.de() as usize);
@@ -264,12 +265,9 @@ pub fn opxCD(cpu: &mut Cpu, mmu: &mut Mmu) {
     // Set pc to value of immediate 16-bit
     // push both bytes of pc onto the stack
     // increment the sp by two
-    let pc = cpu.regs.pc + 3;
+    let pc = (cpu.regs.pc + 3) as u16;
     let nn = cpu.immediate_u16(mmu);
-    mmu.write(cpu.regs.sp as usize, (pc as u16).get_msb());
-    cpu.regs.inc_sp();
-    mmu.write(cpu.regs.sp as usize, (pc as u16).get_lsb());
-    cpu.regs.inc_sp();
+    cpu.stack_push_u16(pc, mmu);
     cpu.regs.pc = nn as usize;
 }
 
@@ -291,23 +289,14 @@ pub fn opxC5(cpu: &mut Cpu, mmu: &mut Mmu) {
     // Put both bytes of BC onto the stack
     // Increment the SP by two
     let bc = cpu.regs.bc();
-    mmu.write(cpu.regs.sp, cpu.regs.b);
-    cpu.regs.inc_sp();
-    mmu.write(cpu.regs.sp, cpu.regs.c);
-    cpu.regs.inc_sp();
+    cpu.stack_push_u16(bc, mmu);
 }
 
 pub fn opxC1(cpu: &mut Cpu, mmu: &mut Mmu) {
     // POP BC
     // Remove the top two bytes from the stack and place in BC
     // Decrement the stack pointer by two
-    cpu.regs.dec_sp();
-    let c = mmu.read(cpu.regs.sp);
-    cpu.regs.dec_sp();
-    let b = mmu.read(cpu.regs.sp);
-    let mut bc: u16 = 0;
-    bc.set_msb(b);
-    bc.set_lsb(c);
+    let bc = cpu.stack_pop_u16(mmu);
     cpu.regs.set_bc(bc);
 }
 
@@ -364,13 +353,7 @@ pub fn opxC9(cpu: &mut Cpu, mmu: &mut Mmu) {
     // RET
     // Get word from stack
     // Decrement sp by 2
-    cpu.regs.dec_sp();
-    let lsb = mmu.read(cpu.regs.sp);
-    cpu.regs.dec_sp();
-    let msb = mmu.read(cpu.regs.sp);
-    let mut word: u16 = 0;
-    word.set_msb(msb);
-    word.set_lsb(lsb);
+    let word = cpu.stack_pop_u16(mmu);
     cpu.regs.pc = word as usize;
 }
 pub fn opxFE(cpu: &mut Cpu, mmu: &mut Mmu) {

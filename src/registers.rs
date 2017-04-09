@@ -63,40 +63,36 @@ impl Registers {
         }
     }
     pub fn bc(&self) -> u16 {
-        let mut bc: u16 = 0;
-        bc.set_msb(self.b);
-        bc.set_lsb(self.c);
+        let mut bc = (self.b as u16) << 8;
+        bc |= self.c as u16;
         bc
     }
     pub fn de(&self) -> u16 {
-        let mut de: u16 = 0;
-        de.set_msb(self.d);
-        de.set_lsb(self.e);
+        let mut de = (self.d as u16) << 8;
+        de |= self.e as u16;
         de
     }
     pub fn hl(&self) -> u16 {
-        let mut hl: u16 = 0;
-        hl.set_msb(self.h);
-        hl.set_lsb(self.l);
+        let mut hl = (self.h as u16) << 8;
+        hl |= self.l as u16;
         hl
     }
     pub fn af(&self) -> u16 {
-        let mut af: u16 = 0;
-        af.set_msb(self.a);
-        af.set_lsb(self.flags.as_u8());
+        let mut af = (self.a as u16) << 8;
+        af |= self.flags.as_u8() as u16;
         af
     }
     pub fn set_bc(&mut self, val: u16) {
-        self.b = val.get_msb();
-        self.c = val.get_lsb();
+        self.b = ((val & 0xFF00) >> 8) as u8;
+        self.c = (val & 0xFF) as u8;
     }
     pub fn set_de(&mut self, val: u16) {
-        self.d = val.get_msb();
-        self.e = val.get_lsb();
+        self.d = ((val & 0xFF00) >> 8) as u8;
+        self.e = (val & 0xFF) as u8;
     }
     pub fn set_hl(&mut self, val: u16) {
-        self.h = val.get_msb();
-        self.l = val.get_lsb();
+        self.h = ((val & 0xFF00) >> 8) as u8;
+        self.l = (val & 0xFF) as u8;
     }
     pub fn inc_sp(&mut self) {
         self.sp -= 1;  // "Increment is subraction because the stack is top-down"

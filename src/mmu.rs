@@ -103,4 +103,15 @@ impl Mmu {
     pub fn read_range(&self, low: usize, high: usize) -> Vec<u8> {
         (low..high).into_iter().map(|x| self.read(x)).collect()
     }
+    pub fn read_u16(&self, address: usize) -> u16 {
+        let first = self.read(address) as u16;
+        let second = self.read(address + 1) as u16;
+        (second << 8) | first
+    }
+    pub fn write_u16(&mut self, address: usize, value: u16) {
+        let first = (value & 0xFF) as u8;
+        let second = (value >> 8) as u8;
+        self.write(address, first);
+        self.write(address + 1, second);
+    }
 }
