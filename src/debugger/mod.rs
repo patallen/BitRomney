@@ -183,6 +183,7 @@ fn parse_input(text: &str) -> Result<Command, &str> {
         "go" | "resume" | "start" => Ok(Command::Resume),
         "exit" | "quit" | "q"     => Ok(Command::Quit),
         "help" | "h"              => Ok(Command::Help),
+        ""                        => build_step(&vec!["1"]),
         _                         => return Err("Invalid command.")
     }
 }
