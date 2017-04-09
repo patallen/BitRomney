@@ -94,13 +94,13 @@ impl Debugger {
     }
     fn handle_command(&mut self, command: Command) {
         match command {
-            Command::Quit => self.mode = DebugMode::Quitting,
+            Command::Step(dist) => {self.step_distance = dist; self.mode = DebugMode::Stepping },
             Command::Restart => self.mode = DebugMode::Restarting,
             Command::Resume => self.mode = DebugMode::Running,
-            Command::Step(dist) => {self.step_distance = dist; self.mode = DebugMode::Stepping },
+            Command::Quit => self.mode = DebugMode::Quitting,
             Command::Show(showtype) => self.show(showtype),
             Command::Set(settype) => self.set(settype),
-            _ => {}
+            Command::Help => self.print_help(),
         }
     }
     fn set(&mut self, settype: SetType) {
@@ -117,9 +117,26 @@ impl Debugger {
             ShowType::Breakpoints => self.print_breakpoints(),
         }
     }
+    fn print_help(&self) {
+        let help_string = "\
+        Step\t(step n) - Run n commands without interruption\n\
+        Restart\t(restart|r) - Hard restart (clear breaks and traces)\n\
+        Resume\t(go|start|resume) - Continue running to next break\n\
+        Quit\t(quit|exit) - Quit emulation\n\
+        Set\t(set <set type> arg\n\
+        \t- set breakpoint 0x****\n\
+        \t- set tracepoint 0x****\n\
+        \t- set speed <instructions per second>\n\
+        Show\t(show|print <show type> arg1 [arg2])\n\
+        \t- show breakpoints\n\
+        \t- show tracepooints\n\
+        \t- show (mem|memory) n [n] (low [high])\n\
+        \t= show (regs | registers)
+        ";
+        println!("{}", help_string);
+    }
     fn print_registers(&self) {
         let regs = &self.gameboy.cpu.regs;
-        println!("");
         println!("-----8-bit Registers-----");
         println!("B: {:02X} | C: {:02X} || BC: {:04X}", regs.b, regs.c, regs.bc());
         println!("D: {:02X} | E: {:02X} || DE: {:04X}", regs.d, regs.e, regs.de());
@@ -129,7 +146,6 @@ impl Debugger {
         println!("  PC: {:04X} | SP: {:04X}", regs.pc, regs.sp);
         println!("----------Flags----------");
         println!("{:?}", self.gameboy.cpu.regs.flags);
-        println!("")
     }
     fn print_tracepoints(&self) {
     }
@@ -160,12 +176,13 @@ fn parse_input(text: &str) -> Result<Command, &str> {
     let parts: Vec<&str> = text.split(" ").collect();
     let next_parts = &parts[1..].to_vec();
     match parts[0] {
-        "restart" | "r"           => Ok(Command::Restart),
-        "go" | "resume" | "start" => Ok(Command::Resume),
-        "exit" | "quit" | "q"     => Ok(Command::Quit),
         "show" | "print"          => build_show(next_parts),
         "step"                    => build_step(next_parts),
         "set"                     => build_set(next_parts),
+        "restart" | "r"           => Ok(Command::Restart),
+        "go" | "resume" | "start" => Ok(Command::Resume),
+        "exit" | "quit" | "q"     => Ok(Command::Quit),
+        "help" | "h"              => Ok(Command::Help),
         _                         => return Err("Invalid command.")
     }
 }
