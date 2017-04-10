@@ -488,18 +488,14 @@ pub fn opx08(cpu: &mut Cpu, mmu: &mut Mmu) {
     mmu.write_u16(a16, cpu.regs.sp as u16);
 }
 pub fn opxF3(cpu: &mut Cpu, mmu: &mut Mmu){
-    // DI
-    // THIS DISABLES INTERUPTS
-    // TODO TODO TODO TODO TODO
+    mmu.ime = false;
 }
 pub fn opxFB(cpu: &mut Cpu, mmu: &mut Mmu){
-    // EI
-    // THIS ENABLES INTERUPTS
-    // TODO TODO TODO TODO TODO
+    mmu.ime = true;
 }
 pub fn ld_x_y(regx: &mut u8, regy: u8) { *regx = regy }
 
-pub fn opx40(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.b, cpu.regs.b)}
+pub fn opx40(cpu: &mut Cpu, mmu: &mut Mmu){}
 pub fn opx41(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.b, cpu.regs.c)}
 pub fn opx42(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.b, cpu.regs.d)}
 pub fn opx43(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.b, cpu.regs.e)}
@@ -508,7 +504,7 @@ pub fn opx45(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.b, cpu.regs.l)}
 pub fn opx46(cpu: &mut Cpu, mmu: &mut Mmu){let v=mmu.read(cpu.regs.hl() as usize);ld_x_y(&mut cpu.regs.b, v)}
 pub fn opx47(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.b, cpu.regs.a)}
 pub fn opx48(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.b, cpu.regs.a)}
-pub fn opx49(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.c, cpu.regs.c)}
+pub fn opx49(cpu: &mut Cpu, mmu: &mut Mmu){}
 pub fn opx4A(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.c, cpu.regs.d)}
 pub fn opx4B(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.c, cpu.regs.e)}
 pub fn opx4C(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.c, cpu.regs.h)}
@@ -552,7 +548,7 @@ pub fn opx7A(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.a, cpu.regs.d)}
 pub fn opx7B(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.a, cpu.regs.e)}
 pub fn opx7C(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.a, cpu.regs.h)}
 pub fn opx7D(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.a, cpu.regs.l)}
-pub fn opx7F(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.a, cpu.regs.a)}
+pub fn opx7F(cpu: &mut Cpu, mmu: &mut Mmu){}
 
 pub fn opx0E(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8(mmu); ld_x_y(&mut cpu.regs.c, v)}
 pub fn opx1E(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8(mmu); ld_x_y(&mut cpu.regs.e, v)}
