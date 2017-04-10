@@ -106,8 +106,13 @@ impl Debugger {
     fn set(&mut self, settype: SetType) {
         match settype {
             SetType::Breakpoint(val) => { self.breakpoints.push(val)},
+            SetType::Memory(loc, val) => { self.set_memory(loc, val)},
             _ => println!("Set type not currenty supported.")
         }
+    }
+    fn set_memory(&mut self, loc: usize, val: u8) {
+        println!("Location: {:04x}, Val: {:02X}", loc, val);
+        self.gameboy.mmu.write(loc, val);
     }
     fn show(&self, showtype: ShowType) {
         match showtype {

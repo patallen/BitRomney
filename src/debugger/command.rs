@@ -12,6 +12,7 @@ pub enum ShowType {
 #[derive(Debug)]
 pub enum SetType {
     Tracepoint,
+    Memory(usize, u8),
     Breakpoint(usize),
     Register,
     Speed,
@@ -56,10 +57,30 @@ pub fn build_set(parts: &Vec<&str>) -> Result<Command, &'static str> {
             Ok(settype) => settype,
             Err(err) => return Err(err)
         },
+        "mem" | "memory" | "m" => match _build_memory_set(&parts) {
+            Ok(settype) => settype,
+            Err(err) => return Err(err)
+        },
         _ => return Err("Invalid argument for 'set'.")
 
     };
     Ok(Command::Set(settype))
+}
+
+pub fn _build_memory_set(parts: &Vec<&str>) -> Result<SetType, &'static str> {
+    if parts.len() < 3 {
+        return Err("Set mem requires two arguments.")
+    }
+    let arg1 = match str_to_u16(parts[1]) {
+        Ok(val) => val as usize,
+        Err(_) => return Err("Invalid argument 1 for memory set.")
+    };
+    let arg2 = match str_to_u16(parts[2]) {
+        Ok(val) => val as u8,
+        Err(_) => return Err("Invalid argument 1 for memory set.")
+    };
+
+    Ok(SetType::Memory(arg1, arg2))
 }
 
 fn _build_breakpoint(parts: &Vec<&str>) -> Result<SetType, &'static str> {
