@@ -43,17 +43,26 @@ pub fn get_operation(code: u16) -> Operation {
         0x00 => match scode {   // No Prefix
             0x00 => match lcode {
                 0x00 => Operation::new(code, opx00, 1, 4,  "NOP"),
+                0x04 => Operation::new(code, opx04, 1, 4,  "INC B"),
                 0x05 => Operation::new(code, opx05, 1, 4,  "DEC B"),
                 0x06 => Operation::new(code, opx06, 2, 8,  "LD B, d8"),
-                0x0C => Operation::new(code, opx0C, 1, 4, "INC C"),
+                0x08 => Operation::new(code, opx08, 3, 20, "LD (a16), SP"),
+                0x0C => Operation::new(code, opx0C, 1, 4,  "INC C"),
+                0x0D => Operation::new(code, opx0D, 1, 4,  "DEC C"),
                 0x0E => Operation::new(code, opx0E, 2, 8,  "LD C, d8"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             0x10 => match lcode {
                 0x01 => Operation::new(code, opx11, 3, 12,  "LD DE, d16"),
                 0x03 => Operation::new(code, opx13, 1, 8,  "INC DE"),
+                0x04 => Operation::new(code, opx14, 1, 4,  "INC D"),
+                0x05 => Operation::new(code, opx15, 1, 4,  "DEC D"),
+                0x06 => Operation::new(code, opx16, 2, 8,  "LD D, d8"),
                 0x07 => Operation::new(code, opx17, 1, 4,  "RLA"),
                 0x0A => Operation::new(code, opx1A, 1, 8,  "LD A, (DE)"),
+                0x0C => Operation::new(code, opx1C, 1, 4,  "INC E"),
+                0x0D => Operation::new(code, opx1D, 1, 4,  "DEC E"),
+                0x0E => Operation::new(code, opx1E, 2, 8,  "LD E, d8"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             0x20 => match lcode {
@@ -61,16 +70,75 @@ pub fn get_operation(code: u16) -> Operation {
                 0x01 => Operation::new(code, opx21, 3, 12, "LD HL, d16"),
                 0x02 => Operation::new(code, opx22, 3, 12, "LD (HL+), A"),
                 0x03 => Operation::new(code, opx23, 1,  8, "INC HL"),
+                0x04 => Operation::new(code, opx24, 1,  4, "INC H"),
+                0x05 => Operation::new(code, opx25, 1,  4, "DEC H"),
+                0x06 => Operation::new(code, opx26, 2, 8,  "LD H, d8"),
+                0x08 => Operation::new(code, opx28, 1, 12, "JR Z, r8"),
+                0x0C => Operation::new(code, opx2C, 1,  4, "INC E"),
+                0x0D => Operation::new(code, opx2D, 1,  4, "DEC L"),
+                0x0E => Operation::new(code, opx2E, 2, 8,  "LD L, d8"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             0x30 => match lcode {
                 0x01 => Operation::new(code, opx31, 3, 12, "LD SP, d16"),
-                0x02 => Operation::new(code, opx32, 1, 8,  "LD (HL-), A"),
-                0x0E => Operation::new(code, opx3E, 2, 8,  "LD A, d8"),
+                0x02 => Operation::new(code, opx32, 1,  8, "LD (HL-), A"),
+                0x05 => Operation::new(code, opx35, 1, 12, "DEC (HL)"),
+                0x0C => Operation::new(code, opx3C, 1,  4, "INC A"),
+                0x0D => Operation::new(code, opx3D, 1,  4, "DEC A"),
+                0x0E => Operation::new(code, opx3E, 2,  8, "LD A, d8"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             0x40 => match lcode {
+                0x00 => Operation::new(code, opx40, 1, 4,  "LD B, B"),
+                0x01 => Operation::new(code, opx41, 1, 4,  "LD B, C"),
+                0x02 => Operation::new(code, opx42, 1, 4,  "LD B, D"),
+                0x03 => Operation::new(code, opx43, 1, 4,  "LD B, E"),
+                0x04 => Operation::new(code, opx44, 1, 4,  "LD B, H"),
+                0x05 => Operation::new(code, opx45, 1, 4,  "LD B, L"),
+                0x06 => Operation::new(code, opx46, 1, 8,  "LD B, (HL)"),
+                0x07 => Operation::new(code, opx47, 1, 4,  "LD B, A"),
+                0x08 => Operation::new(code, opx48, 1, 4,  "LD C, B"),
+                0x09 => Operation::new(code, opx49, 1, 4,  "LD C, C"),
+                0x0A => Operation::new(code, opx4A, 1, 4,  "LD C, D"),
+                0x0B => Operation::new(code, opx4B, 1, 4,  "LD C, E"),
+                0x0C => Operation::new(code, opx4C, 1, 4,  "LD C, H"),
+                0x0D => Operation::new(code, opx4D, 1, 4,  "LD C, L"),
+                0x0E => Operation::new(code, opx4E, 1, 8,  "LD C, (HL)"),
                 0x0F => Operation::new(code, opx4F, 1, 4,  "LD C, A"),
+                _   => Operation::new(code, unimplemented, 0, 0, "(unimplemented"),
+            },
+            0x50 => match lcode {
+                0x00 => Operation::new(code, opx50, 1, 4,  "LD H, B"),
+                0x01 => Operation::new(code, opx51, 1, 4,  "LD H, C"),
+                0x02 => Operation::new(code, opx52, 1, 4,  "LD H, D"),
+                0x03 => Operation::new(code, opx53, 1, 4,  "LD H, E"),
+                0x04 => Operation::new(code, opx54, 1, 4,  "LD H, H"),
+                0x05 => Operation::new(code, opx55, 1, 4,  "LD H, L"),
+                0x07 => Operation::new(code, opx57, 1, 4,  "LD H, A"),
+                0x08 => Operation::new(code, opx58, 1, 4,  "LD H, B"),
+                0x09 => Operation::new(code, opx59, 1, 4,  "LD H, C"),
+                0x0A => Operation::new(code, opx5A, 1, 4,  "LD H, D"),
+                0x0B => Operation::new(code, opx5B, 1, 4,  "LD H, E"),
+                0x0C => Operation::new(code, opx5C, 1, 4,  "LD H, H"),
+                0x0D => Operation::new(code, opx5D, 1, 4,  "LD H, L"),
+                0x0F => Operation::new(code, opx5F, 1, 4,  "LD H, A"),
+                _   => Operation::new(code, unimplemented, 0, 0, "(unimplemented"),
+            },
+            0x60 => match lcode {
+                0x00 => Operation::new(code, opx60, 1, 4,  "LD H, B"),
+                0x01 => Operation::new(code, opx61, 1, 4,  "LD H, C"),
+                0x02 => Operation::new(code, opx62, 1, 4,  "LD H, D"),
+                0x03 => Operation::new(code, opx63, 1, 4,  "LD H, E"),
+                0x04 => Operation::new(code, opx64, 1, 4,  "LD H, H"),
+                0x05 => Operation::new(code, opx65, 1, 4,  "LD H, L"),
+                0x07 => Operation::new(code, opx67, 1, 4,  "LD H, A"),
+                0x08 => Operation::new(code, opx68, 1, 4,  "LD H, B"),
+                0x09 => Operation::new(code, opx69, 1, 4,  "LD H, C"),
+                0x0A => Operation::new(code, opx6A, 1, 4,  "LD H, D"),
+                0x0B => Operation::new(code, opx6B, 1, 4,  "LD H, E"),
+                0x0C => Operation::new(code, opx6C, 1, 4,  "LD H, H"),
+                0x0D => Operation::new(code, opx6D, 1, 4,  "LD H, L"),
+                0x0F => Operation::new(code, opx6F, 1, 4,  "LD H, A"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             0x70 => match lcode {
@@ -97,10 +165,14 @@ pub fn get_operation(code: u16) -> Operation {
             },
             0xE0 => match lcode {
                 0x00 => Operation::new(code, opxE0, 2, 12, "LDH (a8), A"),
-                0x02 => Operation::new(code, opxE2, 1, 8, "LD (C), A"),  // TODO: Check Size again ( one site says 1 other, 2)
+                0x02 => Operation::new(code, opxE2, 1, 8, "LD (C), A"),
+                0x0A => Operation::new(code, opxEA, 3, 16, "LD (a16), A"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             0xF0 => match lcode {
+                0x00 => Operation::new(code, opxF0, 2, 12, "LDH A, (a8)"),
+                0x03 => Operation::new(code, opxF3, 1, 4, "DI"),
+                0x0B => Operation::new(code, opxFB, 1, 4, "EI"),
                 0x0E => Operation::new(code, opxFE, 2, 8, "CP d8"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
@@ -203,23 +275,17 @@ pub fn opxAF(cpu: &mut Cpu, mmu: &mut Mmu) {
     cpu.regs.a ^= a;
     cpu.regs.flags.z = cpu.regs.a == 0;
 }
-pub fn opx0E(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD C, d8
-    // Load immediate 8-bit into register C
-    let next = cpu.immediate_u8(mmu);
-    cpu.regs.c = next;
-}
-pub fn opx3E(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD A, d8
-    // Load immediate 8-bit into register A
-    let next = cpu.immediate_u8(mmu);
-    cpu.regs.a = next;
-}
 pub fn opxE2(cpu: &mut Cpu, mmu: &mut Mmu) {
     // LD (C), A
     // Load value from register A into mem at address specified by register C
     let c = cpu.regs.c as usize + 0xFF00;
     mmu.write(c as usize, cpu.regs.a);
+}
+pub fn opxEA(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD (a16), A
+    // Load the value of register 16 into memory at addres specified by immediate 16
+    let a16 = cpu.immediate_u16(mmu) as usize;
+    mmu.write(a16, cpu.regs.a);
 }
 pub fn opx77(cpu: &mut Cpu, mmu: &mut Mmu) {
     // LD (HL), A
@@ -271,17 +337,72 @@ pub fn opxCD(cpu: &mut Cpu, mmu: &mut Mmu) {
     cpu.regs.pc = nn as usize;
 }
 
+pub fn opx40(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD B, B
+    cpu.regs.b = cpu.regs.b;
+}
+pub fn opx41(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD B, C
+    cpu.regs.b = cpu.regs.c;
+}
+pub fn opx42(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD B, D
+    cpu.regs.b = cpu.regs.d;
+}
+pub fn opx43(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD B, E
+    cpu.regs.b = cpu.regs.e;
+}
+pub fn opx44(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD B, H
+    cpu.regs.b = cpu.regs.h;
+}
+pub fn opx45(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD B, L
+    cpu.regs.b = cpu.regs.l;
+}
+pub fn opx46(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD B, (HL)  (1, 8)
+    let addr = cpu.regs.hl() as usize;
+    let val = mmu.read(addr);
+    cpu.regs.b = val;
+}
+pub fn opx47(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD B, A
+    cpu.regs.b = cpu.regs.a;
+}
+pub fn opx48(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD C, B
+    cpu.regs.b = cpu.regs.a;
+}
+pub fn opx49(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD C, C
+    cpu.regs.c = cpu.regs.c;
+}
+pub fn opx4A(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD C, D
+    cpu.regs.c = cpu.regs.d;
+}
+pub fn opx4B(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD C, E
+    cpu.regs.c = cpu.regs.e;
+}
+pub fn opx4C(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD C, H
+    cpu.regs.c = cpu.regs.h;
+}
+pub fn opx4D(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD C, L
+    cpu.regs.c = cpu.regs.l;
+}
+pub fn opx4E(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD C, (HL) (1, 8)
+    let addr = cpu.regs.hl() as usize;
+    cpu.regs.c = mmu.read(addr);
+}
 pub fn opx4F(cpu: &mut Cpu, mmu: &mut Mmu) {
     // LD C, A
-    // Load the value of register A into register C
-    let a = cpu.regs.a;
-    cpu.regs.c = a;
-}
-pub fn opx06(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD B, d8
-    // Load the value of immediate 8-bit into register B
-    let d8 = cpu.immediate_u8(mmu);
-    cpu.regs.b = d8;
+    cpu.regs.c = cpu.regs.a;
 }
 
 pub fn opxC5(cpu: &mut Cpu, mmu: &mut Mmu) {
@@ -298,32 +419,6 @@ pub fn opxC1(cpu: &mut Cpu, mmu: &mut Mmu) {
     // Decrement the stack pointer by two
     let bc = cpu.stack_pop_u16(mmu);
     cpu.regs.set_bc(bc);
-}
-
-pub fn opx0C(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // INC C
-    // Increase value of register C by 1 (wrapping)
-    // Set zero flag to 1 if result is 0, else 0
-    // Set N flag to 0 and H flag to ... TODO
-    let c = cpu.regs.c;
-    let hc = (((c &0xF) + (1 &0xF)) & 0x10) == 0x10;
-    cpu.regs.c = c.wrapping_add(1);
-    cpu.regs.flags.z = cpu.regs.c == 0;
-    cpu.regs.flags.n = false;
-    cpu.regs.flags.h = hc;
-}
-
-pub fn opx05(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // DEC B
-    // Decrement Register B by 1
-    // Set Zero flag and Half-carry if necessary
-    // Set N to 1
-    let b = cpu.regs.b;
-    let hc = (b as i16 & 0xF) - (1 & 0xF) < 0;
-    cpu.regs.b = b.wrapping_sub(1);
-    cpu.regs.flags.h = hc;
-    cpu.regs.flags.n = true;
-    cpu.regs.flags.z = cpu.regs.b == 0;
 }
 
 pub fn opxA0(cpu: &mut Cpu, mmu: &mut Mmu) {
@@ -414,4 +509,124 @@ fn bit_x_n(bit_no: usize, reg: &mut u8, flags: &mut FlagRegister) {
     flags.z = reg.get_bit(bit_no) == 0;
     flags.n = false;
     flags.h = true;
+}
+fn dec_x(reg: &mut u8, flags: &mut FlagRegister) {
+    let hc = (*reg as i16 & 0xF) - (1 & 0xF) < 0;
+    *reg = reg.wrapping_sub(1);
+    flags.h = hc;
+    flags.n = true;
+    flags.z = *reg == 0;
+}
+
+fn inc_x(reg: &mut u8, flags: &mut FlagRegister) {
+    // INC C
+    // Increase value of register C by 1 (wrapping)
+    // Set zero flag to 1 if result is 0, else 0
+    // Set N flag to 0 and H flag to ... TODO
+    let hc = (((*reg &0xF) + (1 &0xF)) & 0x10) == 0x10;
+    *reg = reg.wrapping_add(1);
+    flags.z = *reg == 0;
+    flags.n = false;
+    flags.h = hc;
+}
+pub fn opx04(cpu: &mut Cpu, mmu: &mut Mmu) {inc_x(&mut cpu.regs.b, &mut cpu.regs.flags)}
+pub fn opx14(cpu: &mut Cpu, mmu: &mut Mmu) {inc_x(&mut cpu.regs.d, &mut cpu.regs.flags)}
+pub fn opx24(cpu: &mut Cpu, mmu: &mut Mmu) {inc_x(&mut cpu.regs.h, &mut cpu.regs.flags)}
+pub fn opx0C(cpu: &mut Cpu, mmu: &mut Mmu) {inc_x(&mut cpu.regs.c, &mut cpu.regs.flags)}
+pub fn opx1C(cpu: &mut Cpu, mmu: &mut Mmu) {inc_x(&mut cpu.regs.e, &mut cpu.regs.flags)}
+pub fn opx2C(cpu: &mut Cpu, mmu: &mut Mmu) {inc_x(&mut cpu.regs.l, &mut cpu.regs.flags)}
+pub fn opx3C(cpu: &mut Cpu, mmu: &mut Mmu) {inc_x(&mut cpu.regs.a, &mut cpu.regs.flags)}
+
+pub fn opx05(cpu: &mut Cpu, mmu: &mut Mmu) {dec_x(&mut cpu.regs.b, &mut cpu.regs.flags)}
+pub fn opx15(cpu: &mut Cpu, mmu: &mut Mmu) {dec_x(&mut cpu.regs.d, &mut cpu.regs.flags)}
+pub fn opx25(cpu: &mut Cpu, mmu: &mut Mmu) {dec_x(&mut cpu.regs.h, &mut cpu.regs.flags)}
+pub fn opx0D(cpu: &mut Cpu, mmu: &mut Mmu) {dec_x(&mut cpu.regs.c, &mut cpu.regs.flags)}
+pub fn opx1D(cpu: &mut Cpu, mmu: &mut Mmu) {dec_x(&mut cpu.regs.e, &mut cpu.regs.flags)}
+pub fn opx2D(cpu: &mut Cpu, mmu: &mut Mmu) {dec_x(&mut cpu.regs.l, &mut cpu.regs.flags)}
+pub fn opx3D(cpu: &mut Cpu, mmu: &mut Mmu) {dec_x(&mut cpu.regs.a, &mut cpu.regs.flags)}
+
+pub fn opx35(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // DEC (HL)
+    let addr = cpu.regs.hl() as usize;
+    let mut hl = mmu.read(addr);
+    let hc = (hl as i16 & 0xF) - (1 & 0xF) < 0;
+    hl = hl.wrapping_sub(1);
+    mmu.write(addr, hl);
+    cpu.regs.flags.h = hc;
+    cpu.regs.flags.n = true;
+    cpu.regs.flags.z = hl == 0;
+}
+pub fn opx28(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // JR Z, r8
+    // Jump relative if Z flag == true
+    if cpu.regs.flags.z == false { return {} };
+    let signed = cpu.immediate_u8(mmu) as i8;
+    match signed > 0 {
+        true => cpu.regs.pc += signed.abs() as usize,
+        _ => cpu.regs.pc -= signed.abs() as usize
+    };
+}
+pub fn opx08(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD (a16), SP
+    // Load the 2-byte sp into 2-bytes of memory located at
+    // the value specified by immediate_u16
+    let a16 = cpu.immediate_u16(mmu) as usize;
+    mmu.write_u16(a16, cpu.regs.sp as u16);
+}
+pub fn opxF3(cpu: &mut Cpu, mmu: &mut Mmu){
+    // DI
+    // THIS DISABLES INTERUPTS
+    // TODO TODO TODO TODO TODO
+}
+pub fn opxFB(cpu: &mut Cpu, mmu: &mut Mmu){
+    // EI
+    // THIS ENABLES INTERUPTS
+    // TODO TODO TODO TODO TODO
+}
+pub fn ld_x_y(regx: &mut u8, regy: u8) { *regx = regy }
+
+pub fn opx60(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.b)}
+pub fn opx61(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.c)}
+pub fn opx62(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.d)}
+pub fn opx63(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.e)}
+pub fn opx64(cpu: &mut Cpu, mmu: &mut Mmu){}
+pub fn opx65(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.l)}
+pub fn opx67(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.a)}
+pub fn opx68(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.b)}
+pub fn opx69(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.c)}
+pub fn opx6A(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.d)}
+pub fn opx6B(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.e)}
+pub fn opx6C(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.h)}
+pub fn opx6D(cpu: &mut Cpu, mmu: &mut Mmu){}
+pub fn opx6F(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.a)}
+
+
+pub fn opx54(cpu: &mut Cpu, mmu: &mut Mmu){}
+pub fn opx5D(cpu: &mut Cpu, mmu: &mut Mmu){}
+pub fn opx50(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.b)}
+pub fn opx51(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.c)}
+pub fn opx52(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.d)}
+pub fn opx53(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.e)}
+pub fn opx55(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.l)}
+pub fn opx57(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.a)}
+pub fn opx58(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.b)}
+pub fn opx59(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.c)}
+pub fn opx5A(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.d)}
+pub fn opx5B(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.e)}
+pub fn opx5C(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.h)}
+pub fn opx5F(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.a)}
+
+pub fn opx0E(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8(mmu); ld_x_y(&mut cpu.regs.c, v)}
+pub fn opx1E(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8(mmu); ld_x_y(&mut cpu.regs.e, v)}
+pub fn opx2E(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8(mmu); ld_x_y(&mut cpu.regs.l, v)}
+pub fn opx3E(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8(mmu); ld_x_y(&mut cpu.regs.a, v)}
+pub fn opx06(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8(mmu); ld_x_y(&mut cpu.regs.b, v)}
+pub fn opx16(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8(mmu); ld_x_y(&mut cpu.regs.d, v)}
+pub fn opx26(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8(mmu); ld_x_y(&mut cpu.regs.h, v)}
+
+pub fn opxF0(cpu: &mut Cpu, mmu: &mut Mmu){
+    // LDH A, (a8)  (LDH A, (a8 + 0xFF00))
+    // Load mem[(a8 + 0xFF00)] into register A
+    let addr = 0xFF00 + cpu.immediate_u8(mmu) as usize;
+    cpu.regs.a = mmu.read(addr);
 }
