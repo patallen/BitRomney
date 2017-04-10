@@ -143,7 +143,13 @@ pub fn get_operation(code: u16) -> Operation {
             },
             0x70 => match lcode {
                 0x07 => Operation::new(code, opx77, 1, 8, "LD (HL), A"),
+                0x08 => Operation::new(code, opx78, 1, 4, "LD A, B"),
+                0x09 => Operation::new(code, opx79, 1, 4, "LD A, C"),
+                0x0A => Operation::new(code, opx7A, 1, 4, "LD A, D"),
                 0x0B => Operation::new(code, opx7B, 1, 4, "LD A, E"),
+                0x0C => Operation::new(code, opx7C, 1, 4, "LD A, H"),
+                0x0D => Operation::new(code, opx7D, 1, 4, "LD A, L"),
+                0x0F => Operation::new(code, opx7F, 1, 4, "LD A, A"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             0x90 => match lcode {
@@ -207,7 +213,6 @@ pub fn opx20(cpu: &mut Cpu, mmu: &mut Mmu) {
 }
 pub fn opx21(cpu: &mut Cpu, mmu: &mut Mmu) {
     // LD HL, d16
-    // Load immediate 16-bit into HL register
     let new = cpu.immediate_u16(mmu);
     cpu.regs.set_hl(new);
 }
@@ -221,12 +226,6 @@ pub fn opx22(cpu: &mut Cpu, mmu: &mut Mmu) {
     cpu.regs.set_hl((addr + 1) as u16);
 }
 
-pub fn opx7B(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD A, E
-    // Load register E into register A
-    // Increment HL
-    cpu.regs.a = cpu.regs.e;
-}
 pub fn opx23(cpu: &mut Cpu, mmu: &mut Mmu) {
     // INC HL
     // Increment HL by one.
@@ -337,96 +336,21 @@ pub fn opxCD(cpu: &mut Cpu, mmu: &mut Mmu) {
     cpu.regs.pc = nn as usize;
 }
 
-pub fn opx40(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD B, B
-    cpu.regs.b = cpu.regs.b;
-}
-pub fn opx41(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD B, C
-    cpu.regs.b = cpu.regs.c;
-}
-pub fn opx42(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD B, D
-    cpu.regs.b = cpu.regs.d;
-}
-pub fn opx43(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD B, E
-    cpu.regs.b = cpu.regs.e;
-}
-pub fn opx44(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD B, H
-    cpu.regs.b = cpu.regs.h;
-}
-pub fn opx45(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD B, L
-    cpu.regs.b = cpu.regs.l;
-}
-pub fn opx46(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD B, (HL)  (1, 8)
-    let addr = cpu.regs.hl() as usize;
-    let val = mmu.read(addr);
-    cpu.regs.b = val;
-}
-pub fn opx47(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD B, A
-    cpu.regs.b = cpu.regs.a;
-}
-pub fn opx48(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD C, B
-    cpu.regs.b = cpu.regs.a;
-}
-pub fn opx49(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD C, C
-    cpu.regs.c = cpu.regs.c;
-}
-pub fn opx4A(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD C, D
-    cpu.regs.c = cpu.regs.d;
-}
-pub fn opx4B(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD C, E
-    cpu.regs.c = cpu.regs.e;
-}
-pub fn opx4C(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD C, H
-    cpu.regs.c = cpu.regs.h;
-}
-pub fn opx4D(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD C, L
-    cpu.regs.c = cpu.regs.l;
-}
-pub fn opx4E(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD C, (HL) (1, 8)
-    let addr = cpu.regs.hl() as usize;
-    cpu.regs.c = mmu.read(addr);
-}
-pub fn opx4F(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD C, A
-    cpu.regs.c = cpu.regs.a;
-}
 
 pub fn opxC5(cpu: &mut Cpu, mmu: &mut Mmu) {
     // PUSH BC
-    // Put both bytes of BC onto the stack
-    // Increment the SP by two
     let bc = cpu.regs.bc();
     cpu.stack_push_u16(bc, mmu);
 }
 
 pub fn opxC1(cpu: &mut Cpu, mmu: &mut Mmu) {
     // POP BC
-    // Remove the top two bytes from the stack and place in BC
-    // Decrement the stack pointer by two
     let bc = cpu.stack_pop_u16(mmu);
     cpu.regs.set_bc(bc);
 }
 
 pub fn opxA0(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // AND B
-    // Register B = B & B
-    // Set zero if necessary
-    // Set N and C to 0
-    // Set H to 1
+    // AND B - set N & C = 0, H = 1, Z conditionally
     cpu.regs.flags.c = false;
     cpu.regs.flags.n = false;
     cpu.regs.flags.h = false;
@@ -435,10 +359,7 @@ pub fn opxA0(cpu: &mut Cpu, mmu: &mut Mmu) {
 }
 
 pub fn opx17(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // RLA
-    // Rotate A left one bit.
-    // Place old MSB into carry flag
-    // Place old Carry flag into bit 0 of A
+    // RLA - Shift A left, place lost bit into carry, and move carry to bit 0.
     let msb = cpu.regs.a >> 7;
     cpu.regs.a = cpu.regs.a << 1;
     cpu.regs.a |= cpu.regs.flags.c as u8;
@@ -446,10 +367,7 @@ pub fn opx17(cpu: &mut Cpu, mmu: &mut Mmu) {
 }
 pub fn opxC9(cpu: &mut Cpu, mmu: &mut Mmu) {
     // RET
-    // Get word from stack
-    // Decrement sp by 2
-    let word = cpu.stack_pop_u16(mmu);
-    cpu.regs.pc = word as usize;
+    cpu.regs.pc = cpu.stack_pop_u16(mmu) as usize;
 }
 pub fn opxFE(cpu: &mut Cpu, mmu: &mut Mmu) {
     // CP d8
@@ -519,10 +437,6 @@ fn dec_x(reg: &mut u8, flags: &mut FlagRegister) {
 }
 
 fn inc_x(reg: &mut u8, flags: &mut FlagRegister) {
-    // INC C
-    // Increase value of register C by 1 (wrapping)
-    // Set zero flag to 1 if result is 0, else 0
-    // Set N flag to 0 and H flag to ... TODO
     let hc = (((*reg &0xF) + (1 &0xF)) & 0x10) == 0x10;
     *reg = reg.wrapping_add(1);
     flags.z = *reg == 0;
@@ -585,21 +499,22 @@ pub fn opxFB(cpu: &mut Cpu, mmu: &mut Mmu){
 }
 pub fn ld_x_y(regx: &mut u8, regy: u8) { *regx = regy }
 
-pub fn opx60(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.b)}
-pub fn opx61(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.c)}
-pub fn opx62(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.d)}
-pub fn opx63(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.e)}
-pub fn opx64(cpu: &mut Cpu, mmu: &mut Mmu){}
-pub fn opx65(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.l)}
-pub fn opx67(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.a)}
-pub fn opx68(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.b)}
-pub fn opx69(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.c)}
-pub fn opx6A(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.d)}
-pub fn opx6B(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.e)}
-pub fn opx6C(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.h)}
-pub fn opx6D(cpu: &mut Cpu, mmu: &mut Mmu){}
-pub fn opx6F(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.a)}
-
+pub fn opx40(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.b, cpu.regs.b)}
+pub fn opx41(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.b, cpu.regs.c)}
+pub fn opx42(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.b, cpu.regs.d)}
+pub fn opx43(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.b, cpu.regs.e)}
+pub fn opx44(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.b, cpu.regs.h)}
+pub fn opx45(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.b, cpu.regs.l)}
+pub fn opx46(cpu: &mut Cpu, mmu: &mut Mmu){let v=mmu.read(cpu.regs.hl() as usize);ld_x_y(&mut cpu.regs.b, v)}
+pub fn opx47(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.b, cpu.regs.a)}
+pub fn opx48(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.b, cpu.regs.a)}
+pub fn opx49(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.c, cpu.regs.c)}
+pub fn opx4A(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.c, cpu.regs.d)}
+pub fn opx4B(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.c, cpu.regs.e)}
+pub fn opx4C(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.c, cpu.regs.h)}
+pub fn opx4D(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.c, cpu.regs.l)}
+pub fn opx4E(cpu: &mut Cpu, mmu: &mut Mmu){let v=mmu.read(cpu.regs.hl() as usize);ld_x_y(&mut cpu.regs.c, v)}
+pub fn opx4F(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.c, cpu.regs.a)}
 
 pub fn opx54(cpu: &mut Cpu, mmu: &mut Mmu){}
 pub fn opx5D(cpu: &mut Cpu, mmu: &mut Mmu){}
@@ -616,6 +531,29 @@ pub fn opx5B(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.e)}
 pub fn opx5C(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.h)}
 pub fn opx5F(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.a)}
 
+pub fn opx60(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.b)}
+pub fn opx61(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.c)}
+pub fn opx62(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.d)}
+pub fn opx63(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.e)}
+pub fn opx64(cpu: &mut Cpu, mmu: &mut Mmu){}
+pub fn opx65(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.l)}
+pub fn opx67(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.a)}
+pub fn opx68(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.b)}
+pub fn opx69(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.c)}
+pub fn opx6A(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.d)}
+pub fn opx6B(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.e)}
+pub fn opx6C(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.h)}
+pub fn opx6D(cpu: &mut Cpu, mmu: &mut Mmu){}
+pub fn opx6F(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.a)}
+
+pub fn opx78(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.a, cpu.regs.b)}
+pub fn opx79(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.a, cpu.regs.c)}
+pub fn opx7A(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.a, cpu.regs.d)}
+pub fn opx7B(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.a, cpu.regs.e)}
+pub fn opx7C(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.a, cpu.regs.h)}
+pub fn opx7D(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.a, cpu.regs.l)}
+pub fn opx7F(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.a, cpu.regs.a)}
+
 pub fn opx0E(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8(mmu); ld_x_y(&mut cpu.regs.c, v)}
 pub fn opx1E(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8(mmu); ld_x_y(&mut cpu.regs.e, v)}
 pub fn opx2E(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8(mmu); ld_x_y(&mut cpu.regs.l, v)}
@@ -625,8 +563,6 @@ pub fn opx16(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8(mmu); ld_x_y
 pub fn opx26(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8(mmu); ld_x_y(&mut cpu.regs.h, v)}
 
 pub fn opxF0(cpu: &mut Cpu, mmu: &mut Mmu){
-    // LDH A, (a8)  (LDH A, (a8 + 0xFF00))
-    // Load mem[(a8 + 0xFF00)] into register A
-    let addr = 0xFF00 + cpu.immediate_u8(mmu) as usize;
-    cpu.regs.a = mmu.read(addr);
+    let a = 0xFF00 + cpu.immediate_u8(mmu) as usize;
+    ld_x_y(&mut cpu.regs.a, mmu.read(a))
 }
