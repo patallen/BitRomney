@@ -20,7 +20,7 @@ impl Cpu {
     pub fn cycle(&mut self, mmu: &mut Mmu) {
         let operation = self.get_operation(mmu);
         self.handle_operation(operation, mmu);
-
+        mmu.step();
     }
     fn handle_operation(&mut self, operation: Operation, mmu: &mut Mmu) {
         (operation.func)(self, mmu);

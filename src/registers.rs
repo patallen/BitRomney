@@ -1,5 +1,5 @@
 use std::fmt;
-use bitty::{LittleEndian, BitFlags};
+use bitty::BitFlags;
 
 
 pub struct FlagRegister {
@@ -93,12 +93,6 @@ impl Registers {
     pub fn set_hl(&mut self, val: u16) {
         self.h = ((val & 0xFF00) >> 8) as u8;
         self.l = (val & 0xFF) as u8;
-    }
-    pub fn inc_sp(&mut self) {
-        self.sp -= 1;  // "Increment is subraction because the stack is top-down"
-    }
-    pub fn dec_sp(&mut self) {
-        self.sp += 1;  // "Decrement is addition because the stack is top-down"
     }
 }
 

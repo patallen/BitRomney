@@ -2,9 +2,9 @@ use std::fmt;
 
 use cpu::Cpu;
 use mmu::Mmu;
-use registers::{FlagRegister};
+use registers::FlagRegister;
 
-use bitty::{LittleEndian, BitFlags};
+use bitty::BitFlags;
 
 pub struct Operation {
     pub dis: &'static str,

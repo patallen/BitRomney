@@ -4,6 +4,7 @@ mod operations;
 
 mod rom;
 mod cpu;
+mod ppu;
 mod mmu;
 mod bitty;
 mod gameboy;
