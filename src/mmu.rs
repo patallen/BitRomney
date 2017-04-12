@@ -65,7 +65,7 @@ impl Mmu {
             hram: 	 Box::new([0; 0x80]),
             io: 	   Box::new([0; 0x80]),
             in_bios: true,
-            ie: 	   1,
+            ie: 	   0,
             ime:     false,
         }
     }
@@ -76,8 +76,9 @@ impl Mmu {
                 false 	=> self.rom.read(address),
             },
             0x0000...0x7FFF	=> self.rom.read(address),
-            0x8000...0x9FFF => self.ppu.read_vram(address - 0x8000),
-            0xFE00...0xFE9F => self.ppu.read_oam(address - 0xFE00),
+            0x8000...0x9FFF => self.ppu.read_u8(address),
+            0xFE00...0xFE9F => self.ppu.read_u8(address),
+            0xFF40...0xFF4B => self.ppu.read_u8(address),
             0xA000...0xBFFF => self.sram[address - 0xA000],
             0xC000...0xCFFF => self.wramo[address - 0xC000],
             0xD000...0xDFFF => self.wramx[address - 0xD000],
@@ -91,8 +92,9 @@ impl Mmu {
     pub fn write(&mut self, address: usize, byte: u8) {
         match address {
             0x0000...0x7FFF => self.rom.write(address, byte),
-            0x8000...0x9FFF => self.ppu.write_vram(address - 0x8000, byte),
-            0xFE00...0xFE9F => self.ppu.write_oam(address - 0xFE00, byte),
+            0x8000...0x9FFF => self.ppu.write_u8(address, byte),
+            0xFE00...0xFE9F => self.ppu.write_u8(address, byte),
+            0xFF40...0xFF4B => self.ppu.write_u8(address, byte),
             0xA000...0xBFFF => self.sram[address - 0xA000] = byte,
             0xC000...0xCFFF => self.wramo[address - 0xC000] = byte,
             0xD000...0xDFFF => self.wramx[address - 0xD000] = byte,
