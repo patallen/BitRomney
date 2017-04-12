@@ -245,5 +245,9 @@ impl Ppu {
         };
     }
     pub fn step(&mut self) {
+        self.ly += 1;
+        if self.ly > 153 {
+            self.ly = 0;
+        }
     }
 }
