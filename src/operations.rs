@@ -59,6 +59,7 @@ pub fn get_operation(code: u16) -> Operation {
                 0x05 => Operation::new(code, opx15, 1, 4,  "DEC D"),
                 0x06 => Operation::new(code, opx16, 2, 8,  "LD D, d8"),
                 0x07 => Operation::new(code, opx17, 1, 4,  "RLA"),
+                0x08 => Operation::new(code, opx18, 2, 8,  "JR r8"),
                 0x0A => Operation::new(code, opx1A, 1, 8,  "LD A, (DE)"),
                 0x0C => Operation::new(code, opx1C, 1, 4,  "INC E"),
                 0x0D => Operation::new(code, opx1D, 1, 4,  "DEC E"),
@@ -152,8 +153,25 @@ pub fn get_operation(code: u16) -> Operation {
                 0x0F => Operation::new(code, opx7F, 1, 4, "LD A, A"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
+            0x80 => match lcode {
+                0x00 => Operation::new(code, opx70, 1, 4,  "ADD A, B"),
+                0x01 => Operation::new(code, opx71, 1, 4,  "ADD A, C"),
+                0x02 => Operation::new(code, opx72, 1, 4,  "ADD A, D"),
+                0x03 => Operation::new(code, opx73, 1, 4,  "ADD A, E"),
+                0x04 => Operation::new(code, opx74, 1, 4,  "ADD A, H"),
+                0x05 => Operation::new(code, opx75, 1, 4,  "ADD A, L"),
+                0x06 => Operation::new(code, opx78, 1, 8,  "ADD A, (HL)"),
+                0x07 => Operation::new(code, opx77, 1, 4,  "ADD A, A"),
+                _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
+            },
             0x90 => match lcode {
+                0x00 => Operation::new(code, opx90, 1, 4, "SUB B"),
+                0x01 => Operation::new(code, opx91, 1, 4, "SUB C"),
+                0x02 => Operation::new(code, opx92, 1, 4, "SUB D"),
+                0x03 => Operation::new(code, opx93, 1, 4, "SUB e"),
+                0x04 => Operation::new(code, opx94, 1, 4, "SUB H"),
                 0x05 => Operation::new(code, opx95, 1, 4, "SUB L"),
+                0x07 => Operation::new(code, opx97, 1, 4, "SUB A"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             0xA0 => match lcode {
@@ -161,6 +179,17 @@ pub fn get_operation(code: u16) -> Operation {
                 0x07 => Operation::new(code, opxA7, 1, 4, "AND A"),
                 0x0F => Operation::new(code, opxAF, 1, 4, "XOR A, A"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
+            },
+            0xB0 => match lcode {
+                0x08 => Operation::new(code, opxB8, 1, 4, "CP B"),
+                0x09 => Operation::new(code, opxB9, 1, 4, "CP C"),
+                0x0A => Operation::new(code, opxBA, 1, 4, "CP D"),
+                0x0B => Operation::new(code, opxBB, 1, 4, "CP E"),
+                0x0C => Operation::new(code, opxBC, 1, 4, "CP H"),
+                0x0D => Operation::new(code, opxBD, 1, 4, "CP L"),
+                0x0E => Operation::new(code, opxBE, 1, 8, "CP (HL)"),
+                0x0F => Operation::new(code, opxBF, 1, 4, "CP A"),
+                _    => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             0xC0 => match lcode {
                 0x01 => Operation::new(code, opxC1, 1, 12, "POP BC"),
@@ -201,6 +230,14 @@ pub fn get_operation(code: u16) -> Operation {
 
 pub fn unimplemented(cpu: &mut Cpu, mmu: &mut Mmu) {}
 pub fn opx00(cpu: &mut Cpu, mmu: &mut Mmu) {}
+pub fn opx18(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // JR r8
+    let signed = cpu.immediate_u8(mmu) as i8;
+    match signed > 0 {
+        true => cpu.regs.pc += signed.abs() as usize,
+        _ => cpu.regs.pc -= signed.abs() as usize
+    };
+}
 pub fn opx20(cpu: &mut Cpu, mmu: &mut Mmu) {
     // JR NZ, r8
     // Jump Relative if not zero (signed immediate 8-bit)
@@ -291,18 +328,6 @@ pub fn opx77(cpu: &mut Cpu, mmu: &mut Mmu) {
     // Load value of register A into mem at address specified by register HL
     let hl = cpu.regs.hl() as usize;
     mmu.write(hl, cpu.regs.a);
-}
-pub fn opx95(cpu: &mut Cpu, mmu: &mut Mmu) {
-    // LD (HL), A
-    // Subtract the value of L from A
-    // Load value of register A into mem at address specified by register HL
-    // Set zero based on result
-    // set Register n to 1
-    // Set register H and C as required
-    let a = cpu.regs.l;
-    cpu.regs.a = cpu.regs.a.wrapping_sub(a);
-    cpu.regs.flags.z = cpu.regs.a == 0;
-    cpu.regs.flags.n = true;
 }
 
 pub fn opxE0(cpu: &mut Cpu, mmu: &mut Mmu) {
@@ -561,4 +586,53 @@ pub fn opx26(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8(mmu); ld_x_y
 pub fn opxF0(cpu: &mut Cpu, mmu: &mut Mmu){
     let a = 0xFF00 + cpu.immediate_u8(mmu) as usize;
     ld_x_y(&mut cpu.regs.a, mmu.read(a))
+}
+fn sub_a_x(val: u8, cpu: &mut Cpu) {
+    let hc = (cpu.regs.a as i16 & 0xF) - (val as i16 & 0xF) < 0;  // TODO: This probably isn't right.
+    let c = cpu.regs.a < val;
+    cpu.regs.a = cpu.regs.a.wrapping_sub(val);
+    cpu.regs.flags.z = cpu.regs.a == 0;
+    cpu.regs.flags.n = true;
+    cpu.regs.flags.h = hc;
+    cpu.regs.flags.c = c;
+}
+
+pub fn opx90(cpu: &mut Cpu, mmu: &mut Mmu) {sub_a_x(cpu.regs.b, cpu)}
+pub fn opx91(cpu: &mut Cpu, mmu: &mut Mmu) {sub_a_x(cpu.regs.c, cpu)}
+pub fn opx92(cpu: &mut Cpu, mmu: &mut Mmu) {sub_a_x(cpu.regs.d, cpu)}
+pub fn opx93(cpu: &mut Cpu, mmu: &mut Mmu) {sub_a_x(cpu.regs.e, cpu)}
+pub fn opx94(cpu: &mut Cpu, mmu: &mut Mmu) {sub_a_x(cpu.regs.h, cpu)}
+pub fn opx95(cpu: &mut Cpu, mmu: &mut Mmu) {sub_a_x(cpu.regs.l, cpu)}
+pub fn opx97(cpu: &mut Cpu, mmu: &mut Mmu) {sub_a_x(cpu.regs.a, cpu)}
+
+fn cp_x(val: u8, cpu: &mut Cpu) {
+    let a = cpu.regs.a;
+    cpu.regs.flags.z = a == val;
+    cpu.regs.flags.c = a < val;
+    cpu.regs.flags.n = true;
+    cpu.regs.flags.h = (((a &0xF) + (val &0xF)) & 0x10) == 0x10;
+}
+
+pub fn opxB8(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.b, cpu)}
+pub fn opxB9(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.c, cpu)}
+pub fn opxBA(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.d, cpu)}
+pub fn opxBB(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.e, cpu)}
+pub fn opxBC(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.h, cpu)}
+pub fn opxBD(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.l, cpu)}
+pub fn opxBF(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.a, cpu)}
+pub fn opxBE(cpu: &mut Cpu, mmu: &mut Mmu) {let a=cpu.regs.hl() as usize; cp_x(mmu.read(a), cpu)}
+
+pub fn opx70(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.b, cpu)}
+pub fn opx71(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.c, cpu)}
+pub fn opx72(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.d, cpu)}
+pub fn opx73(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.e, cpu)}
+pub fn opx74(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.h, cpu)}
+pub fn opx75(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.l, cpu)}
+pub fn add_a_x(val: u8, cpu: &mut Cpu) {
+    let c = cpu.regs.a.checked_add(val).is_none();
+    cpu.regs.flags.h = (((cpu.regs.a & 0xF) + (val & 0xF)) & 0x10) == 0x10;
+    cpu.regs.a = cpu.regs.a.wrapping_add(val);
+    cpu.regs.flags.z = val == val;
+    cpu.regs.flags.c = c;
+    cpu.regs.flags.n = false;
 }
