@@ -73,7 +73,7 @@ pub fn get_operation(code: u16) -> Operation {
                 0x04 => Operation::new(code, opx24, 1,  4, "INC H"),
                 0x05 => Operation::new(code, opx25, 1,  4, "DEC H"),
                 0x06 => Operation::new(code, opx26, 2, 8,  "LD H, d8"),
-                0x08 => Operation::new(code, opx28, 1, 12, "JR Z, r8"),
+                0x08 => Operation::new(code, opx28, 2, 12, "JR Z, r8"),
                 0x0C => Operation::new(code, opx2C, 1,  4, "INC E"),
                 0x0D => Operation::new(code, opx2D, 1,  4, "DEC L"),
                 0x0E => Operation::new(code, opx2E, 2, 8,  "LD L, d8"),
