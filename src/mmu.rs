@@ -39,7 +39,7 @@ const BOOT_ROM: [u8; 0x100] = [
 
 pub struct Mmu  {
     rom:	  Rom,
-    ppu:    Ppu,
+    pub ppu:Ppu,
     bios: 	Box<[u8]>,
     sram: 	Box<[u8]>,
     wramo: 	Box<[u8]>,

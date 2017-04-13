@@ -162,6 +162,7 @@ impl Palette {
     }
 }
 pub struct Ppu {
+    on_refresh:   Option<Box<FnMut([u8; 23_040])>>,
     vram:         Box<[u8]>,
     oam:          Box<[u8]>,
     control:      Control,   // FF40
@@ -190,6 +191,7 @@ pub struct Ppu {
 impl Ppu {
     pub fn new() -> Ppu {
         Ppu {
+            on_refresh:   None,
             vram:         Box::new([0; 0x2000]),
             oam:          Box::new([0; 0xA0]),
             control:      Control::new(),
@@ -245,9 +247,17 @@ impl Ppu {
         };
     }
     pub fn step(&mut self) {
+        let thing: [u8; 23_040] = [0; 23_040];
         self.ly += 1;
         if self.ly > 153 {
             self.ly = 0;
         }
+        match self.on_refresh {
+            Some(ref mut on_refresh) => (on_refresh)(thing),
+            _ => {}
+        }
+    }
+    pub fn set_on_refresh(&mut self, callback: Box<FnMut([u8; 23_040])>) {
+        self.on_refresh = Some(callback);
     }
 }
