@@ -3,8 +3,9 @@ use cpu::Cpu;
 use mmu::Mmu;
 
 extern crate sdl2;
-use self::sdl2::render::Renderer;
-use self::sdl2::pixels::Color;
+use self::sdl2::render::{Renderer, Texture};
+use self::sdl2::rect::Rect;
+use self::sdl2::pixels::{Color, PixelFormatEnum};
 
 const DISPLAY_WIDTH: u32 = 320;
 const DISPLAY_HEIGHT: u32 = 288;
@@ -12,6 +13,7 @@ const DISPLAY_HEIGHT: u32 = 288;
 
 struct Display {
     renderer: Renderer<'static>,
+    texture: Texture
 }
 
 impl Display {
@@ -24,12 +26,18 @@ impl Display {
         renderer.set_draw_color(Color::RGB(123, 123, 123));
         renderer.clear();
         renderer.present();
+        let texture = renderer.create_texture_streaming(
+            PixelFormatEnum::ARGB8888, DISPLAY_WIDTH, DISPLAY_HEIGHT).unwrap();
         Display {
             renderer: renderer,
+            texture: texture,
         }
     }
-    pub fn draw_frame(&mut self, data: [u8; 23_040]){
-        println!("CALLED BACK");
+    pub fn draw_frame(&mut self, data: [u8; 23_040 * 4]){
+        self.renderer.clear();
+        self.renderer.copy(&self.texture, None, None).unwrap();
+        self.texture.update(None, &data, 100).unwrap();
+        self.renderer.present();
     }
 }
 pub struct Gameboy {

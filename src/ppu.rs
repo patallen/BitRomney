@@ -106,6 +106,7 @@ impl Stat {
 }
 
 
+#[derive(Debug)]
 enum Shade {
     White,
     LightGray,
@@ -128,6 +129,14 @@ impl Shade {
             Shade::LightGray => 1,
             Shade::DarkGray  => 2,
             Shade::Black     => 3,
+        }
+    }
+    fn to_rgb(&self) -> (u8, u8, u8) {
+        match self {
+            &Shade::Black => (0, 0, 0),
+            &Shade::DarkGray => (90, 90, 90),
+            &Shade::LightGray => (150, 150, 150),
+            &Shade::White => (255, 255, 255),
         }
     }
 }
@@ -162,7 +171,7 @@ impl Palette {
     }
 }
 pub struct Ppu {
-    on_refresh:   Option<Box<FnMut([u8; 23_040])>>,
+    on_refresh:   Option<Box<FnMut([u8; 23_040 * 4])>>,
     vram:         Box<[u8]>,
     oam:          Box<[u8]>,
     control:      Control,   // FF40
@@ -228,6 +237,9 @@ impl Ppu {
         }
     }
     pub fn write_u8(&mut self, loc: usize, value: u8) {
+        if loc >= 0x8000 {
+            println!("GOT ONE: {:02X}", value);
+        }
         match loc {
             0x8000...0x9FFF => self.vram[loc - 0x8000] = value,
             0xFE00...0xFE9F => self.oam[loc - 0xFE00] = value,
@@ -247,17 +259,27 @@ impl Ppu {
         };
     }
     pub fn step(&mut self) {
-        let thing: [u8; 23_040] = [0; 23_040];
         self.ly += 1;
         if self.ly > 153 {
             self.ly = 0;
         }
+        let mut thing: [u8; 23_040 * 4] = [0; 23_040 * 4];
+        for (i, x) in self.vram.into_iter().enumerate() {
+            let s = i * 4;
+            let shade = Shade::from_u8(*x as u8);
+            let (a, b, c) = shade.to_rgb();
+            thing[s] = a;
+            thing[s+1] = b;
+            thing[s+2] = c;
+            thing[s+3] = 0x33;
+        };
+        println!("{:?}", &thing[0..1000]);
         match self.on_refresh {
             Some(ref mut on_refresh) => (on_refresh)(thing),
             _ => {}
         }
     }
-    pub fn set_on_refresh(&mut self, callback: Box<FnMut([u8; 23_040])>) {
+    pub fn set_on_refresh(&mut self, callback: Box<FnMut([u8; 23_040 * 4])>) {
         self.on_refresh = Some(callback);
     }
 }
