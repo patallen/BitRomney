@@ -4,7 +4,6 @@ use mmu::Mmu;
 
 extern crate sdl2;
 use self::sdl2::render::{Renderer, Texture};
-use self::sdl2::rect::Rect;
 use self::sdl2::pixels::{Color, PixelFormatEnum};
 
 const DISPLAY_WIDTH: u32 = 320;

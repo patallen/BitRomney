@@ -1,3 +1,5 @@
+use std::fmt;
+
 struct Control {
     lcd_enable:        bool, // Can only be done during V-Blank
     tilemap_select:    bool, // false=9800-9BFF, true=9C00-9FFF
@@ -43,7 +45,58 @@ impl Control {
         self.bg_display =        (byte      & 0b1) == 1;
     }
 }
-
+struct Line {
+    tiles: [Tile; 32]
+}
+impl Line {
+    fn new(tiles: [Tile; 32]) -> Self {
+        Line {
+            tiles: tiles
+        }
+    }
+    fn pixels(&self) -> Vec<Shade> {
+        let mut rv: Vec<u8> = Vec::new();
+        for r in 0..8 {
+            for t in self.tiles.into_iter() {
+                rv.extend(&t.lines[r]);
+            }
+        }
+        rv.into_iter().map(|r| Shade::from_u8(r)).collect()
+    }
+}
+struct Tile {
+    lines: Vec<[u8; 8]>,
+    size: usize,
+}
+impl Tile {
+    fn new(slice: &[u8]) -> Self {
+        let mut vec: Vec<[u8; 8]> = Vec::new();
+        for bytes in slice.chunks(2) {
+            let mut line: [u8; 8] = [0; 8];
+            for i in 0..8 {
+                line[7 - i] = (bytes[0] >> i & 1) + (bytes[0] >> i & 1);
+            }
+            vec.push(line);
+        }
+        Tile {
+            lines: vec,
+            size: slice.len() / 2
+        }
+    }
+}
+impl fmt::Debug for Tile {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let lines = &self.lines;
+        let mut rv: Vec<String> = Vec::new();
+        for line in lines.into_iter() {
+            let l = line.into_iter()
+                        .map(|x|  match *x {0 => "_".to_string(), _ => format!("{}", x)})
+                        .collect::<Vec<_>>().join(" ");
+            rv.push(l);
+        }
+        write!(f, "{}", rv.into_iter().collect::<Vec<_>>().join("\n"))
+    }
+}
 enum StatMode {
     Hblank,    // LCD Controller is in H-Blank period
     Vblank,    // LCD Controller is in V-blank period
@@ -217,6 +270,18 @@ impl Ppu {
             window_x:     0,
         }
     }
+    fn read_bg_map(&self, x: usize, y: usize) -> usize {
+        let idx = 32 * y + x;
+        self.vram[idx + 0x9800] as usize
+    }
+    fn get_tile(&self, tile_no: usize) -> Tile {
+        let idx = match self.control.bg_data_select {
+            false => ((tile_no.wrapping_add(128) as u16) * 16 + 0x800) as usize,
+            true => (tile_no * 16) as usize
+        };
+        let slice = &self.vram[idx..idx+16];
+        Tile::new(slice)
+    }
     pub fn read_u8(&self, loc: usize) -> u8 {
         match loc {
             0x8000...0x9FFF => self.vram[loc - 0x8000],
@@ -237,9 +302,6 @@ impl Ppu {
         }
     }
     pub fn write_u8(&mut self, loc: usize, value: u8) {
-        if loc >= 0x8000 {
-            println!("GOT ONE: {:02X}", value);
-        }
         match loc {
             0x8000...0x9FFF => self.vram[loc - 0x8000] = value,
             0xFE00...0xFE9F => self.oam[loc - 0xFE00] = value,
@@ -258,25 +320,13 @@ impl Ppu {
             _      => panic!("{} is not a valid Ppu-mapped address.", loc),
         };
     }
+
     pub fn step(&mut self) {
         self.ly += 1;
-        if self.ly > 153 {
-            self.ly = 0;
-        }
-        let mut thing: [u8; 23_040 * 4] = [0; 23_040 * 4];
-        for (i, x) in self.vram.into_iter().enumerate() {
-            let s = i * 4;
-            let shade = Shade::from_u8(*x as u8);
-            let (a, b, c) = shade.to_rgb();
-            thing[s] = a;
-            thing[s+1] = b;
-            thing[s+2] = c;
-            thing[s+3] = 0x33;
-        };
-        println!("{:?}", &thing[0..1000]);
-        match self.on_refresh {
-            Some(ref mut on_refresh) => (on_refresh)(thing),
-            _ => {}
+        if self.ly > 143 {
+            if self.ly > 153 {
+                self.ly = 0;
+            }
         }
     }
     pub fn set_on_refresh(&mut self, callback: Box<FnMut([u8; 23_040 * 4])>) {
