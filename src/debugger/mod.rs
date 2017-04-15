@@ -4,7 +4,7 @@ use std::process;
 use std::io::{stdout, stdin, Write};
 
 use gameboy::Gameboy;
-use operations::{Operation, get_operation};
+use operations::{Operation, ValueMode, get_operation};
 use self::command::{Command, build_step, build_show, build_set, ShowType, SetType};
 
 
@@ -43,9 +43,16 @@ impl Debugger {
         self.check_breakpoints();
     }
     fn print(&mut self) {
-        let op = self.next_operation();
-        println!("(PC:{:04X}|SP:{:04X}) :: {:?}",
-                 self.gameboy.cpu.regs.pc, self.gameboy.cpu.regs.sp, op);
+        let first = self.gameboy.mmu.read(self.gameboy.cpu.regs.pc) as u16;
+        let code = match self.gameboy.mmu.read(self.gameboy.cpu.regs.pc) {
+            0xCB => { first << 8 | self.gameboy.mmu.read(self.gameboy.cpu.regs.pc + 1) as u16 },
+            _ => first
+        };
+        let op = get_operation(code);
+        let mmu = &self.gameboy.mmu;
+        let cpu = &self.gameboy.cpu;
+        println!("(PC:{:04X}|SP:{:04X}) -> {}",
+                 self.gameboy.cpu.regs.pc, self.gameboy.cpu.regs.sp, op.disassemble(cpu, mmu));
     }
     fn check_breakpoints(&mut self) {
         let pc = self.gameboy.cpu.regs.pc;
