@@ -54,6 +54,7 @@ pub fn get_operation(code: u16) -> Operation {
             },
             0x10 => match lcode {
                 0x01 => Operation::new(code, opx11, 3, 12,  "LD DE, d16"),
+                0x02 => Operation::new(code, opx12, 1, 8,  "LD (DE), A"),
                 0x03 => Operation::new(code, opx13, 1, 8,  "INC DE"),
                 0x04 => Operation::new(code, opx14, 1, 4,  "INC D"),
                 0x05 => Operation::new(code, opx15, 1, 4,  "DEC D"),
@@ -75,6 +76,7 @@ pub fn get_operation(code: u16) -> Operation {
                 0x05 => Operation::new(code, opx25, 1,  4, "DEC H"),
                 0x06 => Operation::new(code, opx26, 2, 8,  "LD H, d8"),
                 0x08 => Operation::new(code, opx28, 2, 12, "JR Z, r8"),
+                0x0A => Operation::new(code, opx2A, 1,  4, "STOP 0"),
                 0x0C => Operation::new(code, opx2C, 1,  4, "INC E"),
                 0x0D => Operation::new(code, opx2D, 1,  4, "DEC L"),
                 0x0E => Operation::new(code, opx2E, 2, 8,  "LD L, d8"),
@@ -132,6 +134,7 @@ pub fn get_operation(code: u16) -> Operation {
                 0x03 => Operation::new(code, opx63, 1, 4,  "LD H, E"),
                 0x04 => Operation::new(code, opx64, 1, 4,  "LD H, H"),
                 0x05 => Operation::new(code, opx65, 1, 4,  "LD H, L"),
+                0x06 => Operation::new(code, opx66, 1, 8,  "LD H, (HL)"),
                 0x07 => Operation::new(code, opx67, 1, 4,  "LD H, A"),
                 0x08 => Operation::new(code, opx68, 1, 4,  "LD H, B"),
                 0x09 => Operation::new(code, opx69, 1, 4,  "LD H, C"),
@@ -192,10 +195,14 @@ pub fn get_operation(code: u16) -> Operation {
                 _    => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             0xC0 => match lcode {
+                0x00 => Operation::new(code, opxC0, 3, 24, "RET NZ"),
                 0x01 => Operation::new(code, opxC1, 1, 12, "POP BC"),
+                0x03 => Operation::new(code, opxC3, 3, 12, "JP a16"),
                 0x05 => Operation::new(code, opxC5, 1, 16, "PUSH BC"),
                 0x09 => Operation::new(code, opxC9, 0, 16, "RET"),
+                0x0C => Operation::new(code, opxCC, 0, 24, "CALL Z, a16"),
                 0x0D => Operation::new(code, opxCD, 0, 24, "CALL a16"),
+                0x0E => Operation::new(code, opxCE, 2, 8,  "ADC A, d8"),
                 _   => Operation::new(code, unimplemented, 0, 0, "unimplemented"),
             },
             0xE0 => match lcode {
@@ -362,6 +369,16 @@ pub fn opxCD(cpu: &mut Cpu, mmu: &mut Mmu) {
 }
 
 
+pub fn opxCC(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // Call Z, a16
+    // Set pc to value of immediate 16-bit
+    // push both bytes of pc onto the stack
+    // increment the sp by two
+    if cpu.regs.flags.z == true {
+        opxCD(cpu, mmu);
+    }
+}
+
 pub fn opxC5(cpu: &mut Cpu, mmu: &mut Mmu) {
     // PUSH BC
     let bc = cpu.regs.bc();
@@ -373,7 +390,10 @@ pub fn opxC1(cpu: &mut Cpu, mmu: &mut Mmu) {
     let bc = cpu.stack_pop_u16(mmu);
     cpu.regs.set_bc(bc);
 }
-
+pub fn opxC3(cpu: &mut Cpu, mmu: &mut Mmu) {
+    let addr = cpu.immediate_u16(mmu) as usize;
+    cpu.regs.pc = addr;
+}
 pub fn opxA0(cpu: &mut Cpu, mmu: &mut Mmu) {
     // AND B - set N & C = 0, H = 1, Z conditionally
     cpu.regs.flags.c = false;
@@ -394,6 +414,11 @@ pub fn opxC9(cpu: &mut Cpu, mmu: &mut Mmu) {
     // RET
     cpu.regs.pc = cpu.stack_pop_u16(mmu) as usize;
 }
+pub fn opxC0(cpu: &mut Cpu, mmu: &mut Mmu) {
+    if cpu.regs.flags.z != false {
+        opxC9(cpu, mmu);
+    }
+}
 pub fn opxFE(cpu: &mut Cpu, mmu: &mut Mmu) {
     // CP d8
     // Compare A with d8
@@ -406,16 +431,21 @@ pub fn opxFE(cpu: &mut Cpu, mmu: &mut Mmu) {
     cpu.regs.flags.n = true;
     cpu.regs.flags.h = (((a &0xF) + (d8 &0xF)) & 0x10) == 0x10;
 }
-// pub fn opxCE(cpu: &mut Cpu, mmu: &mut Mmu) {
-//     // ADC A, d8
-//     // Z 0 H C
-//     let ac = cpu.regs.flags.c as u8 + cpu.immediate_u8(mmu);
-//     let a = cpu.regs.a;
-//     let hc = (((a &0xF) + (ac &0xF)) & 0x10) == 0x10;
-//     cpu.regs.a = a.wrapping_add(ac);
-//     cpu.regs.flags.z = cpu.regs.a == 0;
-//     cpu.regs.flags.n = false;
-// }
+pub fn opxCE(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // ADC A, d8
+    // Z 0 H C
+    let ac = cpu.regs.flags.c as u8 + cpu.immediate_u8(mmu);
+    let a = cpu.regs.a;
+    let test = a as u16;
+    if test + ac as u16 > 255 {
+        cpu.regs.flags.c = true;
+    }
+    let hc = (((a &0xF) + (ac &0xF)) & 0x10) == 0x10;
+    cpu.regs.a = a.wrapping_add(ac);
+    cpu.regs.flags.z = cpu.regs.a == 0;
+    cpu.regs.flags.n = false;
+    cpu.regs.flags.h = hc;
+}
 pub  fn cbx7C(cpu: &mut Cpu, mmu: &mut Mmu) {
     let reg = &mut cpu.regs.h;
     let flags = &mut cpu.regs.flags;
@@ -558,6 +588,10 @@ pub fn opx62(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.d)}
 pub fn opx63(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.e)}
 pub fn opx64(cpu: &mut Cpu, mmu: &mut Mmu){}
 pub fn opx65(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.l)}
+pub fn opx66(cpu: &mut Cpu, mmu: &mut Mmu){
+    let addr = cpu.regs.hl() as usize + 0xFF00;
+    let val = mmu.read(addr) as u8;
+    ld_x_y(&mut cpu.regs.h, val)}
 pub fn opx67(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.h, cpu.regs.a)}
 pub fn opx68(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.b)}
 pub fn opx69(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.l, cpu.regs.c)}
@@ -635,4 +669,11 @@ pub fn add_a_x(val: u8, cpu: &mut Cpu) {
     cpu.regs.flags.z = val == val;
     cpu.regs.flags.c = c;
     cpu.regs.flags.n = false;
+}
+
+pub fn opx2A(cpu: &mut Cpu, mmu: &mut Mmu) {}
+
+pub fn opx12(cpu: &mut Cpu, mmu: &mut Mmu) {
+    let addr = mmu.read(cpu.regs.de() as usize) as usize;
+    mmu.write(addr, cpu.regs.a);
 }
