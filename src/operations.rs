@@ -680,12 +680,12 @@ pub fn opxBD(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.l, cpu)}
 pub fn opxBF(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.a, cpu)}
 pub fn opxBE(cpu: &mut Cpu, mmu: &mut Mmu) {let a=cpu.regs.hl() as usize; cp_x(mmu.read(a), cpu)}
 
-pub fn opx70(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.b, cpu)}
-pub fn opx71(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.c, cpu)}
-pub fn opx72(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.d, cpu)}
-pub fn opx73(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.e, cpu)}
-pub fn opx74(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.h, cpu)}
-pub fn opx75(cpu: &mut Cpu, mmu: &mut Mmu) {cp_x(cpu.regs.l, cpu)}
+pub fn opx70(cpu: &mut Cpu, mmu: &mut Mmu) {add_a_x(cpu.regs.b, cpu)}
+pub fn opx71(cpu: &mut Cpu, mmu: &mut Mmu) {add_a_x(cpu.regs.c, cpu)}
+pub fn opx72(cpu: &mut Cpu, mmu: &mut Mmu) {add_a_x(cpu.regs.d, cpu)}
+pub fn opx73(cpu: &mut Cpu, mmu: &mut Mmu) {add_a_x(cpu.regs.e, cpu)}
+pub fn opx74(cpu: &mut Cpu, mmu: &mut Mmu) {add_a_x(cpu.regs.h, cpu)}
+pub fn opx75(cpu: &mut Cpu, mmu: &mut Mmu) {add_a_x(cpu.regs.l, cpu)}
 pub fn add_a_x(val: u8, cpu: &mut Cpu) {
     let c = cpu.regs.a.checked_add(val).is_none();
     cpu.regs.flags.h = (((cpu.regs.a & 0xF) + (val & 0xF)) & 0x10) == 0x10;
