@@ -51,8 +51,8 @@ impl Debugger {
         let op = get_operation(code);
         let mmu = &self.gameboy.mmu;
         let cpu = &self.gameboy.cpu;
-        println!("(PC:{:04X}|SP:{:04X}) -> {}",
-                 self.gameboy.cpu.regs.pc, self.gameboy.cpu.regs.sp, op.disassemble(cpu, mmu));
+        println!("(PC:{:04X}|SP:{:04X}) -> 0x{:04X} -> {}",
+                 self.gameboy.cpu.regs.pc, self.gameboy.cpu.regs.sp, code, op.disassemble(cpu, mmu));
     }
     fn check_breakpoints(&mut self) {
         let pc = self.gameboy.cpu.regs.pc;

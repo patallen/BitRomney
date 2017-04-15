@@ -18,17 +18,13 @@ impl Cpu {
     }
     pub fn cycle(&mut self, mmu: &mut Mmu) {
         let operation = self.get_operation(mmu);
-        self.handle_operation(operation, mmu);
+        (operation.func)(self, mmu);
         mmu.step();
     }
-    fn handle_operation(&mut self, operation: Operation, mmu: &mut Mmu) {
-        (operation.func)(self, mmu);
-        self.regs.pc += operation.size;
-    }
-    pub fn get_operation(&self, mmu: &mut Mmu) -> Operation {
-        let first = mmu.read(self.regs.pc) as u16;
-        let code = match mmu.read(self.regs.pc) {
-            0xCB => { first << 8 | mmu.read(self.regs.pc + 1) as u16 },
+    pub fn get_operation(&mut self, mmu: &mut Mmu) -> Operation {
+        let first = self.immediate_u8_pc(mmu) as u16;
+        let code = match first {
+            0xCB => { first << 8 | self.immediate_u8_pc(mmu) as u16 },
             _ => first
         };
         get_operation(code)
@@ -41,6 +37,18 @@ impl Cpu {
     }
     pub fn immediate_u8(&self, mmu: &Mmu) -> u8 {
         mmu.read(self.regs.pc + 1)
+    }
+    pub fn immediate_u8_pc(&mut self, mmu: &Mmu) -> u8 {
+        let res = mmu.read(self.regs.pc);
+        self.regs.pc += 1;
+        res
+    }
+    pub fn immediate_u16_pc(&mut self, mmu: &Mmu) -> u16 {
+        let pc = self.regs.pc;
+        let mut res: u16 = (mmu.read(pc + 1) as u16) << 8;
+        res |= mmu.read(pc) as u16;
+        self.regs.pc += 2;
+        res
     }
     pub fn stack_pop_u8(&mut self, mmu: &mut Mmu) -> u8 {
         self.regs.sp += 1;

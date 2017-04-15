@@ -328,6 +328,9 @@ impl Ppu {
                 self.ly = 0;
             }
         }
+        //println!("{:?}", self.get_tile(1));
+        //println!("{:?}", self.get_tile(11));
+        //println!("{:?}", self.get_tile(12));
     }
     pub fn set_on_refresh(&mut self, callback: Box<FnMut([u8; 23_040 * 4])>) {
         self.on_refresh = Some(callback);
