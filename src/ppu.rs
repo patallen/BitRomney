@@ -45,28 +45,9 @@ impl Control {
         self.bg_display =        (byte      & 0b1) == 1;
     }
 }
-struct Line {
-    tiles: [Tile; 32]
-}
-impl Line {
-    fn new(tiles: [Tile; 32]) -> Self {
-        Line {
-            tiles: tiles
-        }
-    }
-    fn pixels(&self) -> Vec<Shade> {
-        let mut rv: Vec<u8> = Vec::new();
-        for r in 0..8 {
-            for t in self.tiles.into_iter() {
-                rv.extend(&t.lines[r]);
-            }
-        }
-        rv.into_iter().map(|r| Shade::from_u8(r)).collect()
-    }
-}
+
 struct Tile {
     lines: Vec<[u8; 8]>,
-    size: usize,
 }
 impl Tile {
     fn new(slice: &[u8]) -> Self {
@@ -80,10 +61,10 @@ impl Tile {
         }
         Tile {
             lines: vec,
-            size: slice.len() / 2
         }
     }
 }
+
 impl fmt::Debug for Tile {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let lines = &self.lines;
@@ -97,6 +78,7 @@ impl fmt::Debug for Tile {
         write!(f, "{}", rv.into_iter().collect::<Vec<_>>().join("\n"))
     }
 }
+
 enum StatMode {
     Hblank,    // LCD Controller is in H-Blank period
     Vblank,    // LCD Controller is in V-blank period
@@ -186,10 +168,10 @@ impl Shade {
     }
     fn to_rgb(&self) -> (u8, u8, u8) {
         match self {
-            &Shade::Black => (0, 0, 0),
-            &Shade::DarkGray => (90, 90, 90),
-            &Shade::LightGray => (150, 150, 150),
-            &Shade::White => (255, 255, 255),
+            &Shade::Black =>     (  0,   0,   0),
+            &Shade::DarkGray =>  ( 80,  80,  80),
+            &Shade::LightGray => (140, 140, 140),
+            &Shade::White =>     (155, 188,  15),
         }
     }
 }
@@ -224,13 +206,14 @@ impl Palette {
     }
 }
 pub struct Ppu {
+    framebuffer: [u8; 92160],
     on_refresh:   Option<Box<FnMut([u8; 23_040 * 4])>>,
     vram:         Box<[u8]>,
     oam:          Box<[u8]>,
     control:      Control,   // FF40
     stat:         Stat,      // FF41
-    scroll_x:     u8,        // FF42
-    scroll_y:     u8,        // FF43
+    scroll_y:     u8,        // FF42
+    scroll_x:     u8,        // FF43
 
     // Vertical line to which we are transferring data
     ly:           u8,        // FF44
@@ -253,6 +236,7 @@ pub struct Ppu {
 impl Ppu {
     pub fn new() -> Ppu {
         Ppu {
+            framebuffer:  [0; 92160],
             on_refresh:   None,
             vram:         Box::new([0; 0x2000]),
             oam:          Box::new([0; 0xA0]),
@@ -288,8 +272,8 @@ impl Ppu {
             0xFE00...0xFE9F => self.oam[loc - 0xFE00],
             0xFF40 => self.control.read_u8(),
             0xFF41 => self.stat.read_u8(),
-            0xFF42 => self.scroll_x,
-            0xFF43 => self.scroll_y,
+            0xFF42 => self.scroll_y,
+            0xFF43 => self.scroll_x,
             0xFF44 => self.ly,
             0xFF45 => self.lyc,
             0xFF46 => self.dma_address as u8,
@@ -307,8 +291,8 @@ impl Ppu {
             0xFE00...0xFE9F => self.oam[loc - 0xFE00] = value,
             0xFF40 => self.control.write_u8(value),
             0xFF41 => self.stat.write_u8(value),
-            0xFF42 => self.scroll_x = value,
-            0xFF43 => self.scroll_y = value,
+            0xFF42 => self.scroll_y = value,
+            0xFF43 => self.scroll_x = value,
             0xFF44 => self.ly = value,
             0xFF45 => self.lyc = value,
             0xFF46 => self.dma_address = value as usize,
@@ -320,17 +304,57 @@ impl Ppu {
             _      => panic!("{} is not a valid Ppu-mapped address.", loc),
         };
     }
-
-    pub fn step(&mut self) {
-        self.ly += 1;
-        if self.ly > 143 {
-            if self.ly > 153 {
-                self.ly = 0;
-            }
+    pub fn tile_line(&self, x: usize) -> &[u8] {
+        let base = match self.control.bg_tilemap_select {
+            true => (0x1C00 + x),
+            false => (0x1800 + x),
+        };
+        let tiles = &self.vram[base..base + 20];
+        tiles
+    }
+    fn update_framebuffer(&mut self) {
+        let tile_y = (self.scroll_y as usize + self.ly as usize) / 8;
+        let nth_tile = tile_y * 32 + (self.scroll_x as usize / 8);
+        let tiles: Vec<Tile> = self.tile_line(nth_tile as usize).into_iter()
+                                   .map(|x| self.get_tile(*x as usize))
+                                   .collect();
+        let row_in_tiles = ((self.scroll_y + self.ly) % 8) as usize;
+        let mut lines: Vec<u8> = Vec::new();
+        for t in tiles.into_iter() {
+            lines.extend(&t.lines[row_in_tiles]);
         }
-        //println!("{:?}", self.get_tile(1));
-        //println!("{:?}", self.get_tile(11));
-        //println!("{:?}", self.get_tile(12));
+        let shades: Vec<Shade> = lines.into_iter().map(|x| Shade::from_u8(x)).collect();
+        let offset = (self.ly as usize * 20 * 8 * 4) as usize;
+        for (i, shade) in shades.into_iter().enumerate() {
+            let base = offset + i * 4;
+            let (r, g, b) = shade.to_rgb();
+            self.framebuffer[base    ] = b;
+            self.framebuffer[base + 1] = g;
+            self.framebuffer[base + 2] = r;
+            self.framebuffer[base + 3] = 0xFF;
+        }
+
+    }
+    pub fn step(&mut self) {
+        if self.ly > 153 {
+            self.ly = 0;
+        }
+        if self.ly < 144 {
+            if self.ly == 0 {
+                let frame = self.framebuffer;
+                let mut callback = match self.on_refresh {
+                    Some(ref mut f) => f,
+                    _ => panic!("No 'on_refresh' callback..."),
+                };
+                callback(frame);
+            }
+            self.update_framebuffer();
+        }
+        self.stat.vblank_int_enable = match self.ly {
+            144...153 => true,
+            _ => false,
+        };
+        self.ly += 1;
     }
     pub fn set_on_refresh(&mut self, callback: Box<FnMut([u8; 23_040 * 4])>) {
         self.on_refresh = Some(callback);
