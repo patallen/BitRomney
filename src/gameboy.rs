@@ -2,9 +2,9 @@ use rom::Rom;
 use cpu::Cpu;
 use mmu::Mmu;
 
-extern crate sdl2;
-use self::sdl2::render::{Renderer, Texture};
-use self::sdl2::pixels::{Color, PixelFormatEnum};
+use ::sdl2::render::{Renderer, Texture, BlendMode};
+use ::sdl2::pixels::{Color, PixelFormatEnum};
+
 
 const DISPLAY_WIDTH  : u32 = 160;
 const DISPLAY_HEIGHT : u32 = 144;
@@ -12,14 +12,45 @@ const SCALE          : u32 = 2;
 const TITLE          : &'static str = "BitRomney GB";
 const BACKGROUND     : (u8, u8, u8) = (155, 188, 15);
 
-struct Display {
+
+pub struct Gameboy {
+    pub mmu: Mmu,
+    pub cpu: Cpu,
+}
+
+impl Gameboy {
+    pub fn new(rompath: &str) -> Gameboy {
+        let context = ::sdl2::init().unwrap();
+        let rom = Rom::new(rompath);
+        let mut display = Display::new(context);
+        let mut gb = Gameboy {
+            cpu: Cpu::new(),
+            mmu: Mmu::new(rom),
+        };
+        gb.mmu.ppu.set_on_refresh(Box::new(move | arr | {
+            display.draw_frame(arr);
+        }));
+        gb
+    }
+    pub fn run(&mut self) {
+        loop {
+            self.step();
+        }
+    }
+    pub fn step(&mut self) {
+        self.cpu.cycle(&mut self.mmu);
+    }
+}
+
+
+pub struct Display {
     renderer: Renderer<'static>,
     texture: Texture,
     prev_texture: Texture,
 }
 
 impl Display {
-    pub fn new(context: sdl2::Sdl) -> Display {
+    pub fn new(context: ::sdl2::Sdl) -> Display {
         let width = DISPLAY_WIDTH;
         let height = DISPLAY_HEIGHT;
 
@@ -51,37 +82,9 @@ impl Display {
         self.renderer.copy(&self.prev_texture, None, None).unwrap();
         self.texture.update(None, &data, DISPLAY_WIDTH as usize * 4).unwrap();
         self.texture.set_alpha_mod(127);
-        self.texture.set_blend_mode(sdl2::render::BlendMode::Blend);
+        self.texture.set_blend_mode(BlendMode::Blend);
         self.renderer.copy(&self.texture, None, None).unwrap();
         self.renderer.present();
         self.prev_texture.update(None, &data, DISPLAY_WIDTH as usize * 4).unwrap();
-    }
-}
-pub struct Gameboy {
-    pub mmu: Mmu,
-    pub cpu: Cpu,
-}
-
-impl Gameboy {
-    pub fn new(rompath: &str) -> Gameboy {
-        let context = sdl2::init().unwrap();
-        let rom = Rom::new(rompath);
-        let mut display = Display::new(context);
-        let mut gb = Gameboy {
-            cpu: Cpu::new(),
-            mmu: Mmu::new(rom),
-        };
-        gb.mmu.ppu.set_on_refresh(Box::new(move | arr | {
-            display.draw_frame(arr);
-        }));
-        gb
-    }
-    pub fn run(&mut self) {
-        loop {
-            self.step();
-        }
-    }
-    pub fn step(&mut self) {
-        self.cpu.cycle(&mut self.mmu);
     }
 }
