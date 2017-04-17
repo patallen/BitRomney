@@ -22,7 +22,7 @@ pub enum SetType {
 pub enum Command {
     Show(ShowType),
     Set(SetType),
-    Step(u16),
+    Step(u32),
     Restart,
     Resume,
     Quit,
@@ -31,7 +31,7 @@ pub enum Command {
 
 
 pub fn build_step(parts: &Vec<&str>) -> Result<Command, &'static str> {
-    match parts[0].parse::<u16>() {
+    match parts[0].parse::<u32>() {
         Ok(val) => Ok(Command::Step(val)),
         Err(_) => Err("Invalid arguments for 'step'."),
     }

@@ -24,7 +24,7 @@ pub struct Debugger {
     breakpoints: Vec<usize>,
     mode: DebugMode,
     gameboy: Gameboy,
-    step_distance: u16,
+    step_distance: u32,
 }
 
 impl Debugger {
