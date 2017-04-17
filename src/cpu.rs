@@ -52,24 +52,24 @@ impl Cpu {
     }
     pub fn stack_pop_u8(&mut self, mmu: &mut Mmu) -> u8 {
         self.regs.sp += 1;
-        let sp = self.regs.sp;
+        let sp = self.regs.sp as usize;
         mmu.read(sp)
     }
     pub fn stack_push_u8(&mut self, val: u8, mmu: &mut Mmu) {
-        let sp = self.regs.sp;
+        let sp = self.regs.sp as usize;
         mmu.write(sp, val);
         self.regs.sp -= 1;
     }
     pub fn stack_pop_u16(&mut self, mmu: &mut Mmu) -> u16 {
         self.regs.sp += 1;
-        let sp = self.regs.sp;
+        let sp = self.regs.sp as usize;
         let ret = mmu.read_u16(sp);
         self.regs.sp += 1;
         ret
     }
     pub fn stack_push_u16(&mut self, val: u16, mmu: &mut Mmu) {
         self.regs.sp -= 1;
-        let sp = self.regs.sp;
+        let sp = self.regs.sp as usize;
         mmu.write_u16(sp, val);
         self.regs.sp -= 1;
     }

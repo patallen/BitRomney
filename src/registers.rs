@@ -26,6 +26,12 @@ impl FlagRegister {
         flags.set_bit(4, self.c as u8);
         flags
     }
+    pub fn set_u8(&mut self, byte: u8) {
+        self.z = ((byte >> 7) & 1) == 1;
+        self.n = ((byte >> 6) & 1) == 1;
+        self.h = ((byte >> 5) & 1) == 1;
+        self.c = ((byte >> 4) & 1) == 1;
+    }
 }
 
 impl fmt::Debug for FlagRegister {
@@ -93,6 +99,10 @@ impl Registers {
     pub fn set_hl(&mut self, val: u16) {
         self.h = ((val & 0xFF00) >> 8) as u8;
         self.l = (val & 0xFF) as u8;
+    }
+    pub fn set_af(&mut self, val: u16) {
+        self.a = (val & 0xFF00) as u8;
+        self.flags.set_u8((val & 0xFF) as u8);
     }
 }
 
