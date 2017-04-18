@@ -66,7 +66,7 @@ pub fn get_operation(code: u16) -> Operation {
                 0x00 => Operation::new(opx00,  4, "NOP",         ValueMode::None),
                 0x01 => Operation::new(opx01, 12, "LD BC, d16",  ValueMode::D16),
                 0x02 => Operation::new(panic,  8, "LD (BC), A",  ValueMode::None),
-                0x03 => Operation::new(panic,  8, "INC BC",      ValueMode::None),
+                0x03 => Operation::new(opx03,  8, "INC BC",      ValueMode::None),
                 0x04 => Operation::new(opx04,  4, "INC B",       ValueMode::None),
                 0x05 => Operation::new(opx05,  4, "DEC B",       ValueMode::None),
                 0x06 => Operation::new(opx06,  8, "LD B, {}",    ValueMode::D8),
@@ -82,7 +82,7 @@ pub fn get_operation(code: u16) -> Operation {
                 _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
             },
             0x10 => match lcode {
-                0x00 => Operation::new(panic,  2, "STOP 0",      ValueMode::None),
+                0x00 => Operation::new(opx00,  2, "STOP 0",      ValueMode::None),
                 0x01 => Operation::new(opx11, 12, "LD DE, {}",   ValueMode::D16),
                 0x02 => Operation::new(opx12,  8, "LD (DE), A",  ValueMode::None),
                 0x03 => Operation::new(opx13,  8, "INC DE",      ValueMode::None),
@@ -123,7 +123,7 @@ pub fn get_operation(code: u16) -> Operation {
                 0x00 => Operation::new(panic, 12, "JR NC, r8",   ValueMode::R8),
                 0x01 => Operation::new(opx31, 12, "LD SP, {}",   ValueMode::D16),
                 0x02 => Operation::new(opx32,  8, "LD (HL-), A", ValueMode::None),
-                0x03 => Operation::new(panic,  8, "INC SP",      ValueMode::None),
+                0x03 => Operation::new(opx33,  8, "INC SP",      ValueMode::None),
                 0x04 => Operation::new(panic, 12, "INC (HL)",    ValueMode::None),
                 0x05 => Operation::new(opx35, 12, "DEC (HL)",    ValueMode::None),
                 0x06 => Operation::new(opx36, 12, "LD (HL), d8", ValueMode::D8),
@@ -221,7 +221,7 @@ pub fn get_operation(code: u16) -> Operation {
                 0x03 => Operation::new(opx83,  4, "ADD A, E",    ValueMode::None),
                 0x04 => Operation::new(opx84,  4, "ADD A, H",    ValueMode::None),
                 0x05 => Operation::new(opx85,  4, "ADD A, L",    ValueMode::None),
-                0x06 => Operation::new(panic,  8, "ADD A, (HL)", ValueMode::None),
+                0x06 => Operation::new(opx86,  8, "ADD A, (HL)", ValueMode::None),
                 0x07 => Operation::new(opx87,  4, "ADD A, A",    ValueMode::None),
                 0x08 => Operation::new(panic,  4, "ADC A, B",    ValueMode::None),
                 0x09 => Operation::new(panic,  4, "ADC A, C",    ValueMode::None),
@@ -294,9 +294,9 @@ pub fn get_operation(code: u16) -> Operation {
                 0x01 => Operation::new(opxC1, 12, "POP BC",      ValueMode::None),
                 0x02 => Operation::new(panic, 16, "JP NZ {}",    ValueMode::A16),
                 0x03 => Operation::new(opxC3, 12, "JP {}",       ValueMode::A16),
-                0x04 => Operation::new(panic, 24, "CALL NZ, {}", ValueMode::A16),
+                0x04 => Operation::new(opxC4, 24, "CALL NZ, {}", ValueMode::A16),
                 0x05 => Operation::new(opxC5, 16, "PUSH BC",     ValueMode::None),
-                0x06 => Operation::new(panic,  8, "ADD A, {}",   ValueMode::D8),
+                0x06 => Operation::new(opxC6,  8, "ADD A, {}",   ValueMode::D8),
                 0x07 => Operation::new(panic, 16, "RST 00H",     ValueMode::D8),
                 0x08 => Operation::new(opxC8, 20, "RET Z",       ValueMode::None),
                 0x09 => Operation::new(opxC9, 16, "RET",         ValueMode::None),
@@ -313,7 +313,7 @@ pub fn get_operation(code: u16) -> Operation {
                 0x02 => Operation::new(panic, 16, "JP NC, {}",   ValueMode::A16),
                 0x04 => Operation::new(panic, 24, "CALL NC, {}", ValueMode::A16),
                 0x05 => Operation::new(opxD5, 16, "PUSH DE",     ValueMode::None),
-                0x06 => Operation::new(panic,  8, "SUB {}",      ValueMode::D8),
+                0x06 => Operation::new(opxD6,  8, "SUB {}",      ValueMode::D8),
                 0x07 => Operation::new(panic, 16, "RST 10H",     ValueMode::None),
                 0x08 => Operation::new(opxD8, 20, "RET C",       ValueMode::None),
                 0x09 => Operation::new(panic, 16, "RETI",        ValueMode::None),
@@ -464,6 +464,10 @@ pub fn opx01(cpu: &mut Cpu, mmu: &mut Mmu) {
     let d16 = cpu.immediate_u16_pc(mmu);
     cpu.regs.set_bc(d16);
 }
+pub fn opx03(cpu: &mut Cpu, mmu: &mut Mmu){
+    let val = cpu.regs.bc();
+    cpu.regs.set_bc(val.wrapping_add(1));
+}
 pub fn opx04(cpu: &mut Cpu, mmu: &mut Mmu){inc_x(&mut cpu.regs.b, &mut cpu.regs.flags)}
 pub fn opx05(cpu: &mut Cpu, mmu: &mut Mmu){dec_x(&mut cpu.regs.b, &mut cpu.regs.flags)}
 pub fn opx06(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8_pc(mmu); ld_x_y(&mut cpu.regs.b, v)}
@@ -471,8 +475,8 @@ pub fn opx08(cpu: &mut Cpu, mmu: &mut Mmu){
     // LD (a16), SP
     // Load the 2-byte sp into 2-bytes of memory located at
     // the value specified by immediate_u16_pc
-    let a16 = cpu.immediate_u16_pc(mmu) as usize;
-    mmu.write_u16(a16, cpu.regs.sp as u16);
+    let addr = cpu.immediate_u16_pc(mmu) as usize;
+    mmu.write_u16(addr, cpu.regs.sp as u16);
 }
 pub fn opx09(cpu: &mut Cpu, mmu: &mut Mmu){let v=cpu.regs.bc(); add_hl(cpu, v)}
 pub fn opx0B(cpu: &mut Cpu, mmu: &mut Mmu){let bc = cpu.regs.bc(); cpu.regs.set_bc(bc.wrapping_sub(1))}
@@ -542,6 +546,10 @@ pub fn opx32(cpu: &mut Cpu, mmu: &mut Mmu) {
     mmu.write(addr, a);
     cpu.regs.set_hl((addr as u16).wrapping_sub(1));
 }
+pub fn opx33(cpu: &mut Cpu, mmu: &mut Mmu){
+    let val = cpu.regs.sp;
+    cpu.regs.sp = val.wrapping_add(1)
+}
 pub fn opx31(cpu: &mut Cpu, mmu: &mut Mmu) {
     // LD SP, d16
     // Load immediate 16-bit into Stack Pointer
@@ -559,8 +567,8 @@ pub fn opxE2(cpu: &mut Cpu, mmu: &mut Mmu) {
 pub fn opxEA(cpu: &mut Cpu, mmu: &mut Mmu) {
     // LD (a16), A
     // Load the value of register A into memory at address specified by immediate 16
-    let a16 = cpu.immediate_u16_pc(mmu) as usize;
-    mmu.write(a16, cpu.regs.a);
+    let addr = cpu.immediate_u16_pc(mmu) as usize;
+    mmu.write(addr, cpu.regs.a);
 }
 pub fn opx77(cpu: &mut Cpu, mmu: &mut Mmu) {
     // LD (HL), A
@@ -621,7 +629,7 @@ pub fn opxC3(cpu: &mut Cpu, mmu: &mut Mmu) {
 pub fn opxE9(cpu: &mut Cpu, mmu: &mut Mmu) {
     // JP (HL)
     let hl = cpu.regs.hl() as usize;
-    cpu.regs.pc = mmu.read(hl) as usize;
+    cpu.regs.pc = hl;
 }
 pub fn opxE6(cpu: &mut Cpu, mmu: &mut Mmu) {
     // AND d8
@@ -788,6 +796,10 @@ fn sub_a_x(val: u8, cpu: &mut Cpu) {
     cpu.regs.flags.c = c;
 }
 
+pub fn opxD6(cpu: &mut Cpu, mmu: &mut Mmu){
+    let d8 = cpu.immediate_u8_pc(mmu);
+    sub_a_x(d8, cpu);
+}
 pub fn opx40(cpu: &mut Cpu, mmu: &mut Mmu){}
 pub fn opx41(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.b, cpu.regs.c)}
 pub fn opx42(cpu: &mut Cpu, mmu: &mut Mmu){ld_x_y(&mut cpu.regs.b, cpu.regs.d)}
@@ -854,6 +866,7 @@ pub fn opx82(cpu: &mut Cpu, mmu: &mut Mmu) {add_a_x(cpu.regs.d, cpu)}
 pub fn opx83(cpu: &mut Cpu, mmu: &mut Mmu) {add_a_x(cpu.regs.e, cpu)}
 pub fn opx84(cpu: &mut Cpu, mmu: &mut Mmu) {add_a_x(cpu.regs.h, cpu)}
 pub fn opx85(cpu: &mut Cpu, mmu: &mut Mmu) {add_a_x(cpu.regs.l, cpu)}
+pub fn opx86(cpu: &mut Cpu, mmu: &mut Mmu){let v=mmu.read(cpu.regs.hl() as usize); add_a_x(v, cpu)}
 pub fn opx87(cpu: &mut Cpu, mmu: &mut Mmu) {add_a_x(cpu.regs.a, cpu)}
 pub fn add_a_x(val: u8, cpu: &mut Cpu) {
     let c = add_c_u8(cpu.regs.a, val);
@@ -904,7 +917,7 @@ pub fn opx3A(cpu: &mut Cpu, mmu: &mut Mmu) {
     cpu.regs.set_hl(addr.wrapping_sub(1));
 }
 pub fn opx12(cpu: &mut Cpu, mmu: &mut Mmu) {
-    let addr = mmu.read(cpu.regs.de() as usize) as usize;
+    let addr = cpu.regs.de() as usize;
     mmu.write(addr, cpu.regs.a);
 }
 
@@ -994,7 +1007,7 @@ pub fn opxFF(cpu: &mut Cpu, mmu: &mut Mmu){restart(cpu, mmu, 0x38)}
 pub fn restart(cpu: &mut Cpu, mmu: &mut Mmu, addr: usize){
     let pc = cpu.regs.pc as u16;
     cpu.stack_push_u16(pc, mmu);
-    cpu.regs.pc = addr
+    cpu.regs.pc = addr;
 }
 
 pub fn opxC1(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.stack_pop_u16(mmu); cpu.regs.set_bc(v)}
@@ -1088,6 +1101,13 @@ pub fn opxD8(cpu: &mut Cpu, mmu: &mut Mmu){
     // RET C
     if cpu.regs.flags.c{
         cpu.regs.pc = cpu.stack_pop_u16(mmu) as usize;
+    }
+}
+
+pub fn opxC4(cpu: &mut Cpu, mmu: &mut Mmu){
+    let addr = cpu.immediate_u16_pc(mmu) as usize;
+    if cpu.regs.flags.z == false {
+        cpu.regs.pc = addr;
     }
 }
 pub fn cbx80(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.b, 0)}
