@@ -358,6 +358,14 @@ pub fn get_operation(code: u16) -> Operation {
         0xCB => match scode {   // CB Prefix
             0x10 => match lcode {
                 0x01 => Operation::new(cbx11,  8, "RL C",        ValueMode::None),
+                0x08 => Operation::new(cbx18,  8, "RR B",        ValueMode::None),
+                0x09 => Operation::new(cbx19,  8, "RR C",        ValueMode::None),
+                0x0A => Operation::new(cbx1A,  8, "RR D",        ValueMode::None),
+                0x0B => Operation::new(cbx1B,  8, "RR E",        ValueMode::None),
+                0x0C => Operation::new(cbx1C,  8, "RR H",        ValueMode::None),
+                0x0D => Operation::new(cbx1D,  8, "RR L",        ValueMode::None),
+                0x0E => Operation::new(cbx1E,  8, "RR (HL)",     ValueMode::None),
+                0x0F => Operation::new(cbx1F,  8, "RR A",        ValueMode::None),
                 _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
             },
             0x30 => match lcode {
@@ -1218,4 +1226,23 @@ fn cb_res(reg: &mut u8, bit: usize) {
     let mut r = *reg;
     r.set_bit(bit, 0);
     *reg = r;
+}
+
+pub fn cbx18(cpu: &mut Cpu, mmu: &mut Mmu){let f = &mut cpu.regs.flags; cb_rr(&mut cpu.regs.b, f)}
+pub fn cbx19(cpu: &mut Cpu, mmu: &mut Mmu){let f = &mut cpu.regs.flags; cb_rr(&mut cpu.regs.c, f)}
+pub fn cbx1A(cpu: &mut Cpu, mmu: &mut Mmu){let f = &mut cpu.regs.flags; cb_rr(&mut cpu.regs.d, f)}
+pub fn cbx1B(cpu: &mut Cpu, mmu: &mut Mmu){let f = &mut cpu.regs.flags; cb_rr(&mut cpu.regs.e, f)}
+pub fn cbx1C(cpu: &mut Cpu, mmu: &mut Mmu){let f = &mut cpu.regs.flags; cb_rr(&mut cpu.regs.h, f)}
+pub fn cbx1D(cpu: &mut Cpu, mmu: &mut Mmu){let f = &mut cpu.regs.flags; cb_rr(&mut cpu.regs.l, f)}
+pub fn cbx1E(cpu: &mut Cpu, mmu: &mut Mmu){let h = cpu.regs.hl() as usize;let f = &mut cpu.regs.flags;cb_rr(&mut mmu.read(h), f)}
+pub fn cbx1F(cpu: &mut Cpu, mmu: &mut Mmu){let f = &mut cpu.regs.flags; cb_rr(&mut cpu.regs.a, f)}
+
+fn cb_rr(x: &mut u8, flags: &mut FlagRegister) {
+    let r = *x;
+    let c = r & 1;
+    *x = (r >> 1) | ((flags.c as u8) << 7);
+    flags.c = c == 1;
+    flags.z = *x == 0;
+    flags.h = false;
+    flags.n = false;
 }
