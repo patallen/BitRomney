@@ -368,6 +368,13 @@ pub fn get_operation(code: u16) -> Operation {
                 0x04 => Operation::new(cbx34,  8, "SWAP H",      ValueMode::None),
                 0x05 => Operation::new(cbx35,  8, "SWAP L",      ValueMode::None),
                 0x07 => Operation::new(cbx37,  8, "SWAP A",      ValueMode::None),
+                0x08 => Operation::new(cbx38,  8, "SRL B",       ValueMode::None),
+                0x09 => Operation::new(cbx39,  8, "SRL C",       ValueMode::None),
+                0x0A => Operation::new(cbx3A,  8, "SRL D",       ValueMode::None),
+                0x0B => Operation::new(cbx3B,  8, "SRL E",       ValueMode::None),
+                0x0C => Operation::new(cbx3C,  8, "SRL H",       ValueMode::None),
+                0x0D => Operation::new(cbx3D,  8, "SRL L",       ValueMode::None),
+                0x0F => Operation::new(cbx3F,  8, "SRL A",       ValueMode::None),
                 _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
             },
             0x70 => match lcode {
@@ -554,7 +561,7 @@ pub fn opx31(cpu: &mut Cpu, mmu: &mut Mmu) {
     // LD SP, d16
     // Load immediate 16-bit into Stack Pointer
     let pc = cpu.regs.pc;
-    let sp = cpu.immediate_u16_pc(mmu);
+    let sp = cpu.immediate_u16_pc(mmu) as usize;
     cpu.regs.sp = sp;
 }
 
@@ -624,6 +631,17 @@ pub fn opxCC(cpu: &mut Cpu, mmu: &mut Mmu) {
 pub fn opxC3(cpu: &mut Cpu, mmu: &mut Mmu) {
     let addr = cpu.immediate_u16_pc(mmu) as usize;
     cpu.regs.pc = addr;
+}
+
+pub fn opxC6(cpu: &mut Cpu, mmu: &mut Mmu) {
+    let d8 = cpu.immediate_u8_pc(mmu);
+    let hc = add_hc_u8(cpu.regs.a, d8);
+    let c = add_c_u8(cpu.regs.a, d8);
+    cpu.regs.a = cpu.regs.a.wrapping_add(d8);
+    cpu.regs.flags.z = cpu.regs.a == 0;
+    cpu.regs.flags.n = false;
+    cpu.regs.flags.h = hc;
+    cpu.regs.flags.c = c;
 }
 
 pub fn opxE9(cpu: &mut Cpu, mmu: &mut Mmu) {
@@ -1110,6 +1128,24 @@ pub fn opxC4(cpu: &mut Cpu, mmu: &mut Mmu){
         cpu.regs.pc = addr;
     }
 }
+
+pub fn srl(reg: &mut u8, flags: &mut FlagRegister) {
+    let val = *reg;
+    *reg = *reg >> 1;
+    flags.z = *reg == 0;
+    flags.c = val & 1 != 0;
+    flags.n = false;
+    flags.h = false;
+}
+
+pub fn cbx38(cpu: &mut Cpu, mmu: &mut Mmu){let f = &mut cpu.regs.flags; srl(&mut cpu.regs.b, f)}
+pub fn cbx39(cpu: &mut Cpu, mmu: &mut Mmu){let f = &mut cpu.regs.flags; srl(&mut cpu.regs.c, f)}
+pub fn cbx3A(cpu: &mut Cpu, mmu: &mut Mmu){let f = &mut cpu.regs.flags; srl(&mut cpu.regs.d, f)}
+pub fn cbx3B(cpu: &mut Cpu, mmu: &mut Mmu){let f = &mut cpu.regs.flags; srl(&mut cpu.regs.e, f)}
+pub fn cbx3C(cpu: &mut Cpu, mmu: &mut Mmu){let f = &mut cpu.regs.flags; srl(&mut cpu.regs.h, f)}
+pub fn cbx3D(cpu: &mut Cpu, mmu: &mut Mmu){let f = &mut cpu.regs.flags; srl(&mut cpu.regs.l, f)}
+pub fn cbx3F(cpu: &mut Cpu, mmu: &mut Mmu){let f = &mut cpu.regs.flags; srl(&mut cpu.regs.a, f)}
+
 pub fn cbx80(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.b, 0)}
 pub fn cbx81(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.c, 0)}
 pub fn cbx82(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.d, 0)}
