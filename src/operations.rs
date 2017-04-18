@@ -374,7 +374,80 @@ pub fn get_operation(code: u16) -> Operation {
                 0x0C => Operation::new(cbx7C, 8, "BIT 7, H",     ValueMode::None),
                 _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
             },
+            0x80 => match lcode {
+                0x00 => Operation::new(cbx80, 8, "RES 0, B",     ValueMode::None),
+                0x01 => Operation::new(cbx81, 8, "RES 0, C",     ValueMode::None),
+                0x02 => Operation::new(cbx82, 8, "RES 0, D",     ValueMode::None),
+                0x03 => Operation::new(cbx83, 8, "RES 0, E",     ValueMode::None),
+                0x04 => Operation::new(cbx84, 8, "RES 0, H",     ValueMode::None),
+                0x05 => Operation::new(cbx85, 8, "RES 0, L",     ValueMode::None),
+                0x06 => Operation::new(cbx86, 8, "RES 0, (HL)",  ValueMode::None),
+                0x07 => Operation::new(cbx87, 8, "RES 0, A",     ValueMode::None),
+                0x08 => Operation::new(cbx88, 8, "RES 1, B",     ValueMode::None),
+                0x09 => Operation::new(cbx89, 8, "RES 1, C",     ValueMode::None),
+                0x0A => Operation::new(cbx8A, 8, "RES 1, D",     ValueMode::None),
+                0x0B => Operation::new(cbx8B, 8, "RES 1, E",     ValueMode::None),
+                0x0C => Operation::new(cbx8C, 8, "RES 1, H",     ValueMode::None),
+                0x0D => Operation::new(cbx8D, 8, "RES 1, L",     ValueMode::None),
+                0x0E => Operation::new(cbx8E, 8, "RES 1, (HL)",  ValueMode::None),
+                0x0F => Operation::new(cbx8F, 8, "RES 1, A",     ValueMode::None),
+                _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
+            },
+            0x90 => match lcode {
+                0x00 => Operation::new(cbx90, 8, "RES 2, B",     ValueMode::None),
+                0x01 => Operation::new(cbx91, 8, "RES 2, C",     ValueMode::None),
+                0x02 => Operation::new(cbx92, 8, "RES 2, D",     ValueMode::None),
+                0x03 => Operation::new(cbx93, 8, "RES 2, E",     ValueMode::None),
+                0x04 => Operation::new(cbx94, 8, "RES 2, H",     ValueMode::None),
+                0x05 => Operation::new(cbx95, 8, "RES 2, L",     ValueMode::None),
+                0x06 => Operation::new(cbx96, 8, "RES 2, (HL)",  ValueMode::None),
+                0x07 => Operation::new(cbx97, 8, "RES 2, A",     ValueMode::None),
+                0x08 => Operation::new(cbx98, 8, "RES 3, B",     ValueMode::None),
+                0x09 => Operation::new(cbx99, 8, "RES 3, C",     ValueMode::None),
+                0x0A => Operation::new(cbx9A, 8, "RES 3, D",     ValueMode::None),
+                0x0B => Operation::new(cbx9B, 8, "RES 3, E",     ValueMode::None),
+                0x0C => Operation::new(cbx9C, 8, "RES 3, H",     ValueMode::None),
+                0x0D => Operation::new(cbx9D, 8, "RES 3, L",     ValueMode::None),
+                0x0E => Operation::new(cbx9E, 8, "RES 3, (HL)",  ValueMode::None),
+                0x0F => Operation::new(cbx9F, 8, "RES 3, A",     ValueMode::None),
+                _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
+            },
             0xA0 => match lcode {
+                0x00 => Operation::new(cbxA0, 8, "RES 4, B",     ValueMode::None),
+                0x01 => Operation::new(cbxA1, 8, "RES 4, C",     ValueMode::None),
+                0x02 => Operation::new(cbxA2, 8, "RES 4, D",     ValueMode::None),
+                0x03 => Operation::new(cbxA3, 8, "RES 4, E",     ValueMode::None),
+                0x04 => Operation::new(cbxA4, 8, "RES 4, H",     ValueMode::None),
+                0x05 => Operation::new(cbxA5, 8, "RES 4, L",     ValueMode::None),
+                0x06 => Operation::new(cbxA6, 8, "RES 4, (HL)",  ValueMode::None),
+                0x07 => Operation::new(cbxA7, 8, "RES 4, A",     ValueMode::None),
+                0x08 => Operation::new(cbxA8, 8, "RES 5, B",     ValueMode::None),
+                0x09 => Operation::new(cbxA9, 8, "RES 5, C",     ValueMode::None),
+                0x0A => Operation::new(cbxAA, 8, "RES 5, D",     ValueMode::None),
+                0x0B => Operation::new(cbxAB, 8, "RES 5, E",     ValueMode::None),
+                0x0C => Operation::new(cbxAC, 8, "RES 5, H",     ValueMode::None),
+                0x0D => Operation::new(cbxAD, 8, "RES 5, L",     ValueMode::None),
+                0x0E => Operation::new(cbxAE, 8, "RES 5, (HL)",  ValueMode::None),
+                0x0F => Operation::new(cbxAF, 8, "RES 5, A",     ValueMode::None),
+                _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
+            },
+            0xB0 => match lcode {
+                0x00 => Operation::new(cbxB0, 8, "RES 6, B",     ValueMode::None),
+                0x01 => Operation::new(cbxB1, 8, "RES 6, C",     ValueMode::None),
+                0x02 => Operation::new(cbxB2, 8, "RES 6, D",     ValueMode::None),
+                0x03 => Operation::new(cbxB3, 8, "RES 6, E",     ValueMode::None),
+                0x04 => Operation::new(cbxB4, 8, "RES 6, H",     ValueMode::None),
+                0x05 => Operation::new(cbxB5, 8, "RES 6, L",     ValueMode::None),
+                0x06 => Operation::new(cbxB6, 8, "RES 6, (HL)",  ValueMode::None),
+                0x07 => Operation::new(cbxB7, 8, "RES 6, A",     ValueMode::None),
+                0x08 => Operation::new(cbxB8, 8, "RES 7, B",     ValueMode::None),
+                0x09 => Operation::new(cbxB9, 8, "RES 7, C",     ValueMode::None),
+                0x0A => Operation::new(cbxBA, 8, "RES 7, D",     ValueMode::None),
+                0x0B => Operation::new(cbxBB, 8, "RES 7, E",     ValueMode::None),
+                0x0C => Operation::new(cbxBC, 8, "RES 7, H",     ValueMode::None),
+                0x0D => Operation::new(cbxBD, 8, "RES 7, L",     ValueMode::None),
+                0x0E => Operation::new(cbxBE, 8, "RES 7, (HL)",  ValueMode::None),
+                0x0F => Operation::new(cbxBF, 8, "RES 7, A",     ValueMode::None),
                 _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
             },
             _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
@@ -1016,4 +1089,77 @@ pub fn opxD8(cpu: &mut Cpu, mmu: &mut Mmu){
     if cpu.regs.flags.c{
         cpu.regs.pc = cpu.stack_pop_u16(mmu) as usize;
     }
+}
+pub fn cbx80(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.b, 0)}
+pub fn cbx81(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.c, 0)}
+pub fn cbx82(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.d, 0)}
+pub fn cbx83(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.e, 0)}
+pub fn cbx84(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.h, 0)}
+pub fn cbx85(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.l, 0)}
+pub fn cbx86(cpu: &mut Cpu, mmu: &mut Mmu){let r = &mut mmu.read(cpu.regs.hl() as usize); cb_res(r, 0)}
+pub fn cbx87(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.a, 0)}
+pub fn cbx88(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.b, 1)}
+pub fn cbx89(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.c, 1)}
+pub fn cbx8A(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.d, 1)}
+pub fn cbx8B(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.e, 1)}
+pub fn cbx8C(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.h, 1)}
+pub fn cbx8D(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.l, 1)}
+pub fn cbx8E(cpu: &mut Cpu, mmu: &mut Mmu){let r = &mut mmu.read(cpu.regs.hl() as usize); cb_res(r, 1)}
+pub fn cbx8F(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.a, 1)}
+
+pub fn cbx90(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.b, 2)}
+pub fn cbx91(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.c, 2)}
+pub fn cbx92(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.d, 2)}
+pub fn cbx93(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.e, 2)}
+pub fn cbx94(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.h, 2)}
+pub fn cbx95(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.l, 2)}
+pub fn cbx96(cpu: &mut Cpu, mmu: &mut Mmu){let r = &mut mmu.read(cpu.regs.hl() as usize); cb_res(r, 2)}
+pub fn cbx97(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.a, 2)}
+pub fn cbx98(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.b, 3)}
+pub fn cbx99(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.c, 3)}
+pub fn cbx9A(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.d, 3)}
+pub fn cbx9B(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.e, 3)}
+pub fn cbx9C(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.h, 3)}
+pub fn cbx9D(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.l, 3)}
+pub fn cbx9E(cpu: &mut Cpu, mmu: &mut Mmu){let r = &mut mmu.read(cpu.regs.hl() as usize); cb_res(r, 3)}
+pub fn cbx9F(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.a, 3)}
+
+pub fn cbxA0(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.b, 4)}
+pub fn cbxA1(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.c, 4)}
+pub fn cbxA2(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.d, 4)}
+pub fn cbxA3(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.e, 4)}
+pub fn cbxA4(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.h, 4)}
+pub fn cbxA5(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.l, 4)}
+pub fn cbxA6(cpu: &mut Cpu, mmu: &mut Mmu){let r = &mut mmu.read(cpu.regs.hl() as usize); cb_res(r, 4)}
+pub fn cbxA7(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.a, 4)}
+pub fn cbxA8(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.b, 5)}
+pub fn cbxA9(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.c, 5)}
+pub fn cbxAA(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.d, 5)}
+pub fn cbxAB(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.e, 5)}
+pub fn cbxAC(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.h, 5)}
+pub fn cbxAD(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.l, 5)}
+pub fn cbxAE(cpu: &mut Cpu, mmu: &mut Mmu){let r = &mut mmu.read(cpu.regs.hl() as usize); cb_res(r, 5)}
+pub fn cbxAF(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.a, 5)}
+
+pub fn cbxB0(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.b, 6)}
+pub fn cbxB1(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.c, 6)}
+pub fn cbxB2(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.d, 6)}
+pub fn cbxB3(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.e, 6)}
+pub fn cbxB4(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.h, 6)}
+pub fn cbxB5(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.l, 6)}
+pub fn cbxB6(cpu: &mut Cpu, mmu: &mut Mmu){let r = &mut mmu.read(cpu.regs.hl() as usize); cb_res(r, 6)}
+pub fn cbxB7(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.a, 6)}
+pub fn cbxB8(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.b, 7)}
+pub fn cbxB9(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.c, 7)}
+pub fn cbxBA(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.d, 7)}
+pub fn cbxBB(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.e, 7)}
+pub fn cbxBC(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.h, 7)}
+pub fn cbxBD(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.l, 7)}
+pub fn cbxBE(cpu: &mut Cpu, mmu: &mut Mmu){let r = &mut mmu.read(cpu.regs.hl() as usize); cb_res(r, 7)}
+pub fn cbxBF(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.a, 7)}
+
+fn cb_res(reg: &mut u8, bit: usize) {
+    let mut r = *reg;
+    r.set_bit(bit, 0);
+    *reg = r;
 }
