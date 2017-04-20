@@ -1,4 +1,5 @@
 mod command;
+pub mod dis;
 
 use std::process;
 use std::io::{stdout, stdin, Write};
