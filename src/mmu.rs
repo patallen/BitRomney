@@ -64,7 +64,7 @@ impl Mmu {
             echo: 	 Box::new([0; 0x2000]),
             hram: 	 Box::new([0; 0x80]),
             io: 	   Box::new([0; 0x80]),
-            in_bios: true,
+            in_bios: false,
             ie: 	   0,
             ime:     false,
         }
