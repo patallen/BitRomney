@@ -65,12 +65,12 @@ pub fn get_operation(code: u16) -> Operation {
             0x00 => match lcode {
                 0x00 => Operation::new(opx00,  4, "NOP",         ValueMode::None),
                 0x01 => Operation::new(opx01, 12, "LD BC, d16",  ValueMode::D16),
-                0x02 => Operation::new(panic,  8, "LD (BC), A",  ValueMode::None),
+                0x02 => Operation::new(opx02,  8, "LD (BC), A",  ValueMode::None),
                 0x03 => Operation::new(opx03,  8, "INC BC",      ValueMode::None),
                 0x04 => Operation::new(opx04,  4, "INC B",       ValueMode::None),
                 0x05 => Operation::new(opx05,  4, "DEC B",       ValueMode::None),
                 0x06 => Operation::new(opx06,  8, "LD B, {}",    ValueMode::D8),
-                0x07 => Operation::new(panic,  4, "RCLA",        ValueMode::None),
+                0x07 => Operation::new(opx07,  4, "RLCA",        ValueMode::None),
                 0x08 => Operation::new(opx08, 20, "LD ({}), SP", ValueMode::A16),
                 0x09 => Operation::new(opx09,  8, "ADD HL, BC",  ValueMode::None),
                 0x0A => Operation::new(panic,  8, "LD A, (BC)",  ValueMode::None),
@@ -108,7 +108,7 @@ pub fn get_operation(code: u16) -> Operation {
                 0x04 => Operation::new(opx24,  4, "INC H",       ValueMode::None),
                 0x05 => Operation::new(opx25,  4, "DEC H",       ValueMode::None),
                 0x06 => Operation::new(opx26,  8, "LD H, {}",    ValueMode::D8),
-                0x07 => Operation::new(panic,  4, "DAA",         ValueMode::None),
+                0x07 => Operation::new(opx27,  4, "DAA",         ValueMode::None),
                 0x08 => Operation::new(opx28, 12, "JR Z, {}",    ValueMode::R8),
                 0x09 => Operation::new(opx29,  8, "ADD HL, HL",  ValueMode::None),
                 0x0A => Operation::new(opx2A,  8, "LD A, (HL+)", ValueMode::None),
@@ -124,7 +124,7 @@ pub fn get_operation(code: u16) -> Operation {
                 0x01 => Operation::new(opx31, 12, "LD SP, {}",   ValueMode::D16),
                 0x02 => Operation::new(opx32,  8, "LD (HL-), A", ValueMode::None),
                 0x03 => Operation::new(opx33,  8, "INC SP",      ValueMode::None),
-                0x04 => Operation::new(panic, 12, "INC (HL)",    ValueMode::None),
+                0x04 => Operation::new(opx34, 12, "INC (HL)",    ValueMode::None),
                 0x05 => Operation::new(opx35, 12, "DEC (HL)",    ValueMode::None),
                 0x06 => Operation::new(opx36, 12, "LD (HL), d8", ValueMode::D8),
                 0x07 => Operation::new(panic,  4, "SCF",         ValueMode::None),
@@ -223,14 +223,14 @@ pub fn get_operation(code: u16) -> Operation {
                 0x05 => Operation::new(opx85,  4, "ADD A, L",    ValueMode::None),
                 0x06 => Operation::new(opx86,  8, "ADD A, (HL)", ValueMode::None),
                 0x07 => Operation::new(opx87,  4, "ADD A, A",    ValueMode::None),
-                0x08 => Operation::new(panic,  4, "ADC A, B",    ValueMode::None),
-                0x09 => Operation::new(panic,  4, "ADC A, C",    ValueMode::None),
-                0x0A => Operation::new(panic,  4, "ADC A, D",    ValueMode::None),
-                0x0B => Operation::new(panic,  4, "ADC A, E",    ValueMode::None),
-                0x0C => Operation::new(panic,  4, "ADC A, H",    ValueMode::None),
-                0x0D => Operation::new(panic,  4, "ADC A, L",    ValueMode::None),
-                0x0E => Operation::new(panic,  8, "ADC A, (HL)", ValueMode::None),
-                0x0F => Operation::new(panic,  4, "ADC A, A",    ValueMode::None),
+                0x08 => Operation::new(opx88,  4, "ADC A, B",    ValueMode::None),
+                0x09 => Operation::new(opx89,  4, "ADC A, C",    ValueMode::None),
+                0x0A => Operation::new(opx8A,  4, "ADC A, D",    ValueMode::None),
+                0x0B => Operation::new(opx8B,  4, "ADC A, E",    ValueMode::None),
+                0x0C => Operation::new(opx8C,  4, "ADC A, H",    ValueMode::None),
+                0x0D => Operation::new(opx8D,  4, "ADC A, L",    ValueMode::None),
+                0x0E => Operation::new(opx8E,  8, "ADC A, (HL)", ValueMode::None),
+                0x0F => Operation::new(opx8F,  4, "ADC A, A",    ValueMode::None),
                 _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
             },
             0x90 => match lcode {
@@ -297,7 +297,7 @@ pub fn get_operation(code: u16) -> Operation {
                 0x04 => Operation::new(opxC4, 24, "CALL NZ, {}", ValueMode::A16),
                 0x05 => Operation::new(opxC5, 16, "PUSH BC",     ValueMode::None),
                 0x06 => Operation::new(opxC6,  8, "ADD A, {}",   ValueMode::D8),
-                0x07 => Operation::new(panic, 16, "RST 00H",     ValueMode::D8),
+                0x07 => Operation::new(opxC7, 16, "RST 00H",     ValueMode::D8),
                 0x08 => Operation::new(opxC8, 20, "RET Z",       ValueMode::None),
                 0x09 => Operation::new(opxC9, 16, "RET",         ValueMode::None),
                 0x0A => Operation::new(opxCA, 16, "JP Z, {}",    ValueMode::A16),
@@ -316,7 +316,7 @@ pub fn get_operation(code: u16) -> Operation {
                 0x06 => Operation::new(opxD6,  8, "SUB {}",      ValueMode::D8),
                 0x07 => Operation::new(panic, 16, "RST 10H",     ValueMode::None),
                 0x08 => Operation::new(opxD8, 20, "RET C",       ValueMode::None),
-                0x09 => Operation::new(panic, 16, "RETI",        ValueMode::None),
+                0x09 => Operation::new(opxD9, 16, "RETI",        ValueMode::None),
                 0x0A => Operation::new(opxDA, 16, "JP C, {}",    ValueMode::A16),
                 0x0C => Operation::new(panic, 24, "CALL C, {}",  ValueMode::A16),
                 0x0E => Operation::new(panic, 16, "SBC A, {}",   ValueMode::D8),
@@ -368,6 +368,23 @@ pub fn get_operation(code: u16) -> Operation {
                 0x0F => Operation::new(cbx1F,  8, "RR A",        ValueMode::None),
                 _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
             },
+            0x20 => match lcode {
+                0x00 => Operation::new(cbx20,  8, "SLA B",      ValueMode::None),
+                0x01 => Operation::new(cbx21,  8, "SLA C",      ValueMode::None),
+                0x02 => Operation::new(cbx22,  8, "SLA D",      ValueMode::None),
+                0x03 => Operation::new(cbx23,  8, "SLA E",      ValueMode::None),
+                0x04 => Operation::new(cbx24,  8, "SLA H",      ValueMode::None),
+                0x05 => Operation::new(cbx25,  8, "SLA L",      ValueMode::None),
+                0x07 => Operation::new(cbx27,  8, "SLA A",      ValueMode::None),
+                // 0x08 => Operation::new(cbx28,  8, "SRA B",       ValueMode::None),
+                // 0x09 => Operation::new(cbx29,  8, "SRA C",       ValueMode::None),
+                // 0x0A => Operation::new(cbx2A,  8, "SRA D",       ValueMode::None),
+                // 0x0B => Operation::new(cbx2B,  8, "SRA E",       ValueMode::None),
+                // 0x0C => Operation::new(cbx2C,  8, "SRA H",       ValueMode::None),
+                // 0x0D => Operation::new(cbx2D,  8, "SRA L",       ValueMode::None),
+                // 0x0F => Operation::new(cbx2F,  8, "SRA A",       ValueMode::None),
+                _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
+            },
             0x30 => match lcode {
                 0x00 => Operation::new(cbx30,  8, "SWAP B",      ValueMode::None),
                 0x01 => Operation::new(cbx31,  8, "SWAP C",      ValueMode::None),
@@ -385,8 +402,72 @@ pub fn get_operation(code: u16) -> Operation {
                 0x0F => Operation::new(cbx3F,  8, "SRL A",       ValueMode::None),
                 _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
             },
+            0x40 => match lcode {
+                0x00 => Operation::new(cbx40,  8, "BIT 0,B",      ValueMode::None),
+                0x01 => Operation::new(cbx41,  8, "BIT 0,C",      ValueMode::None),
+                0x02 => Operation::new(cbx42,  8, "BIT 0,D",      ValueMode::None),
+                0x03 => Operation::new(cbx43,  8, "BIT 0,E",      ValueMode::None),
+                0x04 => Operation::new(cbx44,  8, "BIT 0,H",      ValueMode::None),
+                0x05 => Operation::new(cbx45,  8, "BIT 0,L",      ValueMode::None),
+                0x07 => Operation::new(cbx47,  8, "BIT 0,A",      ValueMode::None),
+                0x08 => Operation::new(cbx48,  8, "BIT 1,B",       ValueMode::None),
+                0x09 => Operation::new(cbx49,  8, "BIT 1,C",       ValueMode::None),
+                0x0A => Operation::new(cbx4A,  8, "BIT 1,D",       ValueMode::None),
+                0x0B => Operation::new(cbx4B,  8, "BIT 1,E",       ValueMode::None),
+                0x0C => Operation::new(cbx4C,  8, "BIT 1,H",       ValueMode::None),
+                0x0D => Operation::new(cbx4D,  8, "BIT 1,L",       ValueMode::None),
+                0x0F => Operation::new(cbx4F,  8, "BIT 1,A",       ValueMode::None),
+                _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
+            },
+            0x50 => match lcode {
+                0x00 => Operation::new(cbx50,  8, "BIT 2,B",      ValueMode::None),
+                0x01 => Operation::new(cbx51,  8, "BIT 2,C",      ValueMode::None),
+                0x02 => Operation::new(cbx52,  8, "BIT 2,D",      ValueMode::None),
+                0x03 => Operation::new(cbx53,  8, "BIT 2,E",      ValueMode::None),
+                0x04 => Operation::new(cbx54,  8, "BIT 2,H",      ValueMode::None),
+                0x05 => Operation::new(cbx55,  8, "BIT 2,L",      ValueMode::None),
+                0x07 => Operation::new(cbx57,  8, "BIT 2,A",      ValueMode::None),
+                0x08 => Operation::new(cbx58,  8, "BIT 3,B",       ValueMode::None),
+                0x09 => Operation::new(cbx59,  8, "BIT 3,C",       ValueMode::None),
+                0x0A => Operation::new(cbx5A,  8, "BIT 3,D",       ValueMode::None),
+                0x0B => Operation::new(cbx5B,  8, "BIT 3,E",       ValueMode::None),
+                0x0C => Operation::new(cbx5C,  8, "BIT 3,H",       ValueMode::None),
+                0x0D => Operation::new(cbx5D,  8, "BIT 3,L",       ValueMode::None),
+                0x0F => Operation::new(cbx5F,  8, "BIT 3,A",       ValueMode::None),
+                _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
+            },
+            0x60 => match lcode {
+                0x00 => Operation::new(cbx60,  8, "BIT 4,B",      ValueMode::None),
+                0x01 => Operation::new(cbx61,  8, "BIT 4,C",      ValueMode::None),
+                0x02 => Operation::new(cbx62,  8, "BIT 4,D",      ValueMode::None),
+                0x03 => Operation::new(cbx63,  8, "BIT 4,E",      ValueMode::None),
+                0x04 => Operation::new(cbx64,  8, "BIT 4,H",      ValueMode::None),
+                0x05 => Operation::new(cbx65,  8, "BIT 4,L",      ValueMode::None),
+                0x07 => Operation::new(cbx67,  8, "BIT 4,A",      ValueMode::None),
+                0x08 => Operation::new(cbx68,  8, "BIT 5,B",       ValueMode::None),
+                0x09 => Operation::new(cbx69,  8, "BIT 5,C",       ValueMode::None),
+                0x0A => Operation::new(cbx6A,  8, "BIT 5,D",       ValueMode::None),
+                0x0B => Operation::new(cbx6B,  8, "BIT 5,E",       ValueMode::None),
+                0x0C => Operation::new(cbx6C,  8, "BIT 5,H",       ValueMode::None),
+                0x0D => Operation::new(cbx6D,  8, "BIT 5,L",       ValueMode::None),
+                0x0F => Operation::new(cbx6F,  8, "BIT 5,A",       ValueMode::None),
+                _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
+            },
             0x70 => match lcode {
-                0x0C => Operation::new(cbx7C, 8, "BIT 7, H",     ValueMode::None),
+                0x00 => Operation::new(cbx70,  8, "BIT 5,B",      ValueMode::None),
+                0x01 => Operation::new(cbx71,  8, "BIT 5,C",      ValueMode::None),
+                0x02 => Operation::new(cbx72,  8, "BIT 5,D",      ValueMode::None),
+                0x03 => Operation::new(cbx73,  8, "BIT 5,E",      ValueMode::None),
+                0x04 => Operation::new(cbx74,  8, "BIT 5,H",      ValueMode::None),
+                0x05 => Operation::new(cbx75,  8, "BIT 5,L",      ValueMode::None),
+                0x07 => Operation::new(cbx77,  8, "BIT 5,A",      ValueMode::None),
+                0x08 => Operation::new(cbx78,  8, "BIT 7,B",       ValueMode::None),
+                0x09 => Operation::new(cbx79,  8, "BIT 7,C",       ValueMode::None),
+                0x0A => Operation::new(cbx7A,  8, "BIT 7,D",       ValueMode::None),
+                0x0B => Operation::new(cbx7B,  8, "BIT 7,E",       ValueMode::None),
+                0x0C => Operation::new(cbx7C,  8, "BIT 7,H",       ValueMode::None),
+                0x0D => Operation::new(cbx7D,  8, "BIT 7,L",       ValueMode::None),
+                0x0F => Operation::new(cbx7F,  8, "BIT 7,A",       ValueMode::None),
                 _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
             },
             0x80 => match lcode {
@@ -465,6 +546,25 @@ pub fn get_operation(code: u16) -> Operation {
                 0x0F => Operation::new(cbxBF, 8, "RES 7, A",     ValueMode::None),
                 _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
             },
+            0xF0 => match lcode {
+                // 0x00 => Operation::new(cbxF0, 8, "SET 6, B",     ValueMode::None),
+                // 0x01 => Operation::new(cbxF1, 8, "SET 6, C",     ValueMode::None),
+                // 0x02 => Operation::new(cbxF2, 8, "SET 6, D",     ValueMode::None),
+                // 0x03 => Operation::new(cbxF3, 8, "SET 6, E",     ValueMode::None),
+                // 0x04 => Operation::new(cbxF4, 8, "SET 6, H",     ValueMode::None),
+                // 0x05 => Operation::new(cbxF5, 8, "SET 6, L",     ValueMode::None),
+                // 0x06 => Operation::new(cbxF6, 8, "SET 6, (HL)",  ValueMode::None),
+                // 0x07 => Operation::new(cbxF7, 8, "SET 6, A",     ValueMode::None),
+                0x08 => Operation::new(cbxF8, 8, "SET 7, B",     ValueMode::None),
+                0x09 => Operation::new(cbxF9, 8, "SET 7, C",     ValueMode::None),
+                0x0A => Operation::new(cbxFA, 8, "SET 7, D",     ValueMode::None),
+                0x0B => Operation::new(cbxFB, 8, "SET 7, E",     ValueMode::None),
+                0x0C => Operation::new(cbxFC, 8, "SET 7, H",     ValueMode::None),
+                0x0D => Operation::new(cbxFD, 8, "SET 7, L",     ValueMode::None),
+                0x0E => Operation::new(cbxFE, 8, "SET 7, (HL)",  ValueMode::None),
+                0x0F => Operation::new(cbxFF, 8, "SET 7, A",     ValueMode::None),
+                _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
+            },
             _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
         },
         _ => panic!("0x{:04X} is not a valid opcode.", code),
@@ -479,6 +579,12 @@ pub fn opx01(cpu: &mut Cpu, mmu: &mut Mmu) {
     let d16 = cpu.immediate_u16_pc(mmu);
     cpu.regs.set_bc(d16);
 }
+pub fn opx02(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // LD (BC), A
+    let a = cpu.regs.a;
+    let addr = cpu.regs.bc() as usize;
+    mmu.write(addr, a);
+}
 pub fn opx03(cpu: &mut Cpu, mmu: &mut Mmu){
     let val = cpu.regs.bc();
     cpu.regs.set_bc(val.wrapping_add(1));
@@ -486,6 +592,14 @@ pub fn opx03(cpu: &mut Cpu, mmu: &mut Mmu){
 pub fn opx04(cpu: &mut Cpu, mmu: &mut Mmu){inc_x(&mut cpu.regs.b, &mut cpu.regs.flags)}
 pub fn opx05(cpu: &mut Cpu, mmu: &mut Mmu){dec_x(&mut cpu.regs.b, &mut cpu.regs.flags)}
 pub fn opx06(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8_pc(mmu); ld_x_y(&mut cpu.regs.b, v)}
+pub fn opx07(cpu: &mut Cpu, mmu: &mut Mmu) {
+    let a = cpu.regs.a;
+    let c = (a >> 7) & 1;
+    cpu.regs.a = a << 1;
+    cpu.regs.a |= c;
+    cpu.regs.flags.c = c == 1;
+
+}
 pub fn opx08(cpu: &mut Cpu, mmu: &mut Mmu){
     // LD (a16), SP
     // Load the 2-byte sp into 2-bytes of memory located at
@@ -716,11 +830,6 @@ pub fn opxCE(cpu: &mut Cpu, mmu: &mut Mmu) {
     cpu.regs.flags.h = hc;
     cpu.regs.flags.c = c;
 }
-pub  fn cbx7C(cpu: &mut Cpu, mmu: &mut Mmu) {
-    let reg = &mut cpu.regs.h;
-    let flags = &mut cpu.regs.flags;
-    bit_x_n(7, reg, flags);
-}
 
 pub  fn cbx11(cpu: &mut Cpu, mmu: &mut Mmu) {
     let reg = &mut cpu.regs.c;
@@ -753,6 +862,63 @@ fn bit_x_n(bit_no: usize, reg: &mut u8, flags: &mut FlagRegister) {
     flags.n = false;
     flags.h = true;
 }
+pub  fn cbx40(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(0, &mut cpu.regs.b, &mut cpu.regs.flags)}
+pub  fn cbx41(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(0, &mut cpu.regs.c, &mut cpu.regs.flags)}
+pub  fn cbx42(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(0, &mut cpu.regs.d, &mut cpu.regs.flags)}
+pub  fn cbx43(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(0, &mut cpu.regs.e, &mut cpu.regs.flags)}
+pub  fn cbx44(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(0, &mut cpu.regs.h, &mut cpu.regs.flags)}
+pub  fn cbx45(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(0, &mut cpu.regs.l, &mut cpu.regs.flags)}
+pub  fn cbx47(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(0, &mut cpu.regs.a, &mut cpu.regs.flags)}
+pub  fn cbx48(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(1, &mut cpu.regs.b, &mut cpu.regs.flags)}
+pub  fn cbx49(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(1, &mut cpu.regs.c, &mut cpu.regs.flags)}
+pub  fn cbx4A(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(1, &mut cpu.regs.d, &mut cpu.regs.flags)}
+pub  fn cbx4B(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(1, &mut cpu.regs.e, &mut cpu.regs.flags)}
+pub  fn cbx4C(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(1, &mut cpu.regs.h, &mut cpu.regs.flags)}
+pub  fn cbx4D(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(1, &mut cpu.regs.l, &mut cpu.regs.flags)}
+pub  fn cbx4F(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(1, &mut cpu.regs.a, &mut cpu.regs.flags)}
+pub  fn cbx50(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(2, &mut cpu.regs.b, &mut cpu.regs.flags)}
+pub  fn cbx51(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(2, &mut cpu.regs.c, &mut cpu.regs.flags)}
+pub  fn cbx52(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(2, &mut cpu.regs.d, &mut cpu.regs.flags)}
+pub  fn cbx53(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(2, &mut cpu.regs.e, &mut cpu.regs.flags)}
+pub  fn cbx54(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(2, &mut cpu.regs.h, &mut cpu.regs.flags)}
+pub  fn cbx55(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(2, &mut cpu.regs.l, &mut cpu.regs.flags)}
+pub  fn cbx57(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(2, &mut cpu.regs.a, &mut cpu.regs.flags)}
+pub  fn cbx58(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(3, &mut cpu.regs.b, &mut cpu.regs.flags)}
+pub  fn cbx59(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(3, &mut cpu.regs.c, &mut cpu.regs.flags)}
+pub  fn cbx5A(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(3, &mut cpu.regs.d, &mut cpu.regs.flags)}
+pub  fn cbx5B(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(3, &mut cpu.regs.e, &mut cpu.regs.flags)}
+pub  fn cbx5C(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(3, &mut cpu.regs.h, &mut cpu.regs.flags)}
+pub  fn cbx5D(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(3, &mut cpu.regs.l, &mut cpu.regs.flags)}
+pub  fn cbx5F(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(3, &mut cpu.regs.a, &mut cpu.regs.flags)}
+pub  fn cbx60(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(4, &mut cpu.regs.b, &mut cpu.regs.flags)}
+pub  fn cbx61(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(4, &mut cpu.regs.c, &mut cpu.regs.flags)}
+pub  fn cbx62(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(4, &mut cpu.regs.d, &mut cpu.regs.flags)}
+pub  fn cbx63(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(4, &mut cpu.regs.e, &mut cpu.regs.flags)}
+pub  fn cbx64(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(4, &mut cpu.regs.h, &mut cpu.regs.flags)}
+pub  fn cbx65(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(4, &mut cpu.regs.l, &mut cpu.regs.flags)}
+pub  fn cbx67(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(4, &mut cpu.regs.a, &mut cpu.regs.flags)}
+pub  fn cbx68(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(5, &mut cpu.regs.b, &mut cpu.regs.flags)}
+pub  fn cbx69(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(5, &mut cpu.regs.c, &mut cpu.regs.flags)}
+pub  fn cbx6A(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(5, &mut cpu.regs.d, &mut cpu.regs.flags)}
+pub  fn cbx6B(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(5, &mut cpu.regs.e, &mut cpu.regs.flags)}
+pub  fn cbx6C(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(5, &mut cpu.regs.h, &mut cpu.regs.flags)}
+pub  fn cbx6D(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(5, &mut cpu.regs.l, &mut cpu.regs.flags)}
+pub  fn cbx6F(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(5, &mut cpu.regs.a, &mut cpu.regs.flags)}
+pub  fn cbx70(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(6, &mut cpu.regs.b, &mut cpu.regs.flags)}
+pub  fn cbx71(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(6, &mut cpu.regs.c, &mut cpu.regs.flags)}
+pub  fn cbx72(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(6, &mut cpu.regs.d, &mut cpu.regs.flags)}
+pub  fn cbx73(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(6, &mut cpu.regs.e, &mut cpu.regs.flags)}
+pub  fn cbx74(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(6, &mut cpu.regs.h, &mut cpu.regs.flags)}
+pub  fn cbx75(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(6, &mut cpu.regs.l, &mut cpu.regs.flags)}
+pub  fn cbx77(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(6, &mut cpu.regs.a, &mut cpu.regs.flags)}
+pub  fn cbx78(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(7, &mut cpu.regs.b, &mut cpu.regs.flags)}
+pub  fn cbx79(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(7, &mut cpu.regs.c, &mut cpu.regs.flags)}
+pub  fn cbx7A(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(7, &mut cpu.regs.d, &mut cpu.regs.flags)}
+pub  fn cbx7B(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(7, &mut cpu.regs.e, &mut cpu.regs.flags)}
+pub  fn cbx7C(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(7, &mut cpu.regs.h, &mut cpu.regs.flags)}
+pub  fn cbx7D(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(7, &mut cpu.regs.l, &mut cpu.regs.flags)}
+pub  fn cbx7F(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(7, &mut cpu.regs.a, &mut cpu.regs.flags)}
+
 fn dec_x(reg: &mut u8, flags: &mut FlagRegister) {
     let hc = sub_hc_u8(*reg, 1);
     *reg = reg.wrapping_sub(1);
@@ -780,6 +946,17 @@ pub fn opx1D(cpu: &mut Cpu, mmu: &mut Mmu) {dec_x(&mut cpu.regs.e, &mut cpu.regs
 pub fn opx2D(cpu: &mut Cpu, mmu: &mut Mmu) {dec_x(&mut cpu.regs.l, &mut cpu.regs.flags)}
 pub fn opx3D(cpu: &mut Cpu, mmu: &mut Mmu) {dec_x(&mut cpu.regs.a, &mut cpu.regs.flags)}
 
+pub fn opx34(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // INC (HL)
+    let addr = cpu.regs.hl() as usize;
+    let mut v = mmu.read(addr);
+    let hc = add_hc_u8(v, 1);
+    v = v.wrapping_add(1);
+    mmu.write(addr, v);
+    cpu.regs.flags.n = false;
+    cpu.regs.flags.h = hc;
+    cpu.regs.flags.z = v == 0;
+}
 pub fn opx35(cpu: &mut Cpu, mmu: &mut Mmu) {
     // DEC (HL)
     let addr = cpu.regs.hl() as usize;
@@ -800,6 +977,32 @@ pub fn opx28(cpu: &mut Cpu, mmu: &mut Mmu) {
         true => cpu.regs.pc += signed.abs() as usize,
         _ => cpu.regs.pc -= signed.abs() as usize
     };
+}
+pub fn opx27(cpu: &mut Cpu, mmu: &mut Mmu) {
+    let a = cpu.regs.a;
+    let lsb = a & 0xF;
+    let msb = a >> 4;
+    let n = cpu.regs.flags.n;
+    if lsb > 9 || cpu.regs.flags.h == true {
+        match n {
+            true => {
+                cpu.regs.a = cpu.regs.a.wrapping_sub(0x06);
+            },
+            false => {
+                cpu.regs.a = cpu.regs.a.wrapping_add(0x06);
+            }
+        }
+    }
+    if msb > 9 || cpu.regs.flags.c == true {
+        match n {
+            true => {
+                cpu.regs.a = cpu.regs.a.wrapping_sub(0x60);
+            },
+            false => {
+                cpu.regs.a = cpu.regs.a.wrapping_add(0x60);
+            }
+        }
+    }
 }
 pub fn opxF3(cpu: &mut Cpu, mmu: &mut Mmu){
     mmu.ime = false;
@@ -1042,6 +1245,7 @@ pub fn and_x(val: u8, cpu: &mut Cpu) {
     cpu.regs.flags.h = true;
     cpu.regs.flags.c = false;
 }
+pub fn opxC7(cpu: &mut Cpu, mmu: &mut Mmu){restart(cpu, mmu, 0x00)}
 pub fn opxCF(cpu: &mut Cpu, mmu: &mut Mmu){restart(cpu, mmu, 0x08)}
 pub fn opxDF(cpu: &mut Cpu, mmu: &mut Mmu){restart(cpu, mmu, 0x18)}
 pub fn opxEF(cpu: &mut Cpu, mmu: &mut Mmu){restart(cpu, mmu, 0x28)}
@@ -1146,6 +1350,12 @@ pub fn opxD8(cpu: &mut Cpu, mmu: &mut Mmu){
     }
 }
 
+pub fn opxD9(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // RETI - return from interrupt
+    cpu.regs.pc = cpu.stack_pop_u16(mmu) as usize;
+    mmu.ime = true;
+}
+
 pub fn opxC4(cpu: &mut Cpu, mmu: &mut Mmu){
     let addr = cpu.immediate_u16_pc(mmu) as usize;
     if cpu.regs.flags.z == false {
@@ -1177,7 +1387,11 @@ pub fn cbx83(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.e, 0)}
 pub fn cbx84(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.h, 0)}
 pub fn cbx85(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.l, 0)}
 pub fn cbx86(cpu: &mut Cpu, mmu: &mut Mmu){let r = &mut mmu.read(cpu.regs.hl() as usize); cb_res(r, 0)}
-pub fn cbx87(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.a, 0)}
+pub fn cbx87(cpu: &mut Cpu, mmu: &mut Mmu){
+    println!("Byte: {:08b}", cpu.regs.a);
+    cb_res(&mut cpu.regs.a, 0);
+    println!("Byte: {:08b}", cpu.regs.a);
+}
 pub fn cbx88(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.b, 1)}
 pub fn cbx89(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.c, 1)}
 pub fn cbx8A(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.d, 1)}
@@ -1239,9 +1453,7 @@ pub fn cbxBE(cpu: &mut Cpu, mmu: &mut Mmu){let r = &mut mmu.read(cpu.regs.hl() a
 pub fn cbxBF(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.a, 7)}
 
 fn cb_res(reg: &mut u8, bit: usize) {
-    let mut r = *reg;
-    r.set_bit(bit, 0);
-    *reg = r;
+    *reg &= !(1 << bit);
 }
 
 pub fn cbx18(cpu: &mut Cpu, mmu: &mut Mmu){let f = &mut cpu.regs.flags; cb_rr(&mut cpu.regs.b, f)}
@@ -1263,10 +1475,65 @@ fn cb_rr(x: &mut u8, flags: &mut FlagRegister) {
     flags.n = false;
 }
 
+pub fn cbx20(cpu: &mut Cpu, mmu: &mut Mmu){cb_sla(&mut cpu.regs.b, &mut cpu.regs.flags)}
+pub fn cbx21(cpu: &mut Cpu, mmu: &mut Mmu){cb_sla(&mut cpu.regs.c, &mut cpu.regs.flags)}
+pub fn cbx22(cpu: &mut Cpu, mmu: &mut Mmu){cb_sla(&mut cpu.regs.d, &mut cpu.regs.flags)}
+pub fn cbx23(cpu: &mut Cpu, mmu: &mut Mmu){cb_sla(&mut cpu.regs.e, &mut cpu.regs.flags)}
+pub fn cbx24(cpu: &mut Cpu, mmu: &mut Mmu){cb_sla(&mut cpu.regs.h, &mut cpu.regs.flags)}
+pub fn cbx25(cpu: &mut Cpu, mmu: &mut Mmu){cb_sla(&mut cpu.regs.l, &mut cpu.regs.flags)}
+pub fn cbx27(cpu: &mut Cpu, mmu: &mut Mmu){cb_sla(&mut cpu.regs.a, &mut cpu.regs.flags)}
+fn cb_sla(reg: &mut u8, flags: &mut FlagRegister) {
+    let val = *reg << 1;
+    let c = *reg >> 7;
+    *reg = val;
+    flags.c = c == 1;
+    flags.n = false;
+    flags.h = false;
+    flags.z = val == 0;
+}
+
+
 pub fn opx1F(cpu: &mut Cpu, mmu: &mut Mmu){
     let a = cpu.regs.a;
     let c = cpu.regs.c;
     cpu.regs.a = a >> 1;
     cpu.regs.a |= c << 7;
     cpu.regs.c = a >> 7;
+}
+
+pub fn opx88(cpu: &mut Cpu, mmu: &mut Mmu){let val = cpu.regs.b; op_adc(val, cpu)}
+pub fn opx89(cpu: &mut Cpu, mmu: &mut Mmu){let val = cpu.regs.c; op_adc(val, cpu)}
+pub fn opx8A(cpu: &mut Cpu, mmu: &mut Mmu){let val = cpu.regs.d; op_adc(val, cpu)}
+pub fn opx8B(cpu: &mut Cpu, mmu: &mut Mmu){let val = cpu.regs.e; op_adc(val, cpu)}
+pub fn opx8C(cpu: &mut Cpu, mmu: &mut Mmu){let val = cpu.regs.h; op_adc(val, cpu)}
+pub fn opx8D(cpu: &mut Cpu, mmu: &mut Mmu){let val = cpu.regs.l; op_adc(val, cpu)}
+pub fn opx8E(cpu: &mut Cpu, mmu: &mut Mmu){let val = mmu.read(cpu.regs.hl() as usize); op_adc(val, cpu)}
+pub fn opx8F(cpu: &mut Cpu, mmu: &mut Mmu){let val = cpu.regs.a; op_adc(val, cpu)}
+fn op_adc(val: u8, cpu: &mut Cpu) {
+    let c = cpu.regs.flags.c as u8;
+    let a = cpu.regs.a;
+    let hc = add_hc_u8(a, val + c);
+    let car = add_c_u8(a, val + c);
+
+    cpu.regs.a = cpu.regs.a.wrapping_add(c + val);
+    cpu.regs.flags.n = false;
+    cpu.regs.flags.z = cpu.regs.a == 0;
+    cpu.regs.flags.c = car;
+    cpu.regs.flags.h = hc;
+}
+
+pub fn cbxF8(cpu: &mut Cpu, mmu: &mut Mmu){set_bit(&mut cpu.regs.b, 7)}
+pub fn cbxF9(cpu: &mut Cpu, mmu: &mut Mmu){set_bit(&mut cpu.regs.c, 7)}
+pub fn cbxFA(cpu: &mut Cpu, mmu: &mut Mmu){set_bit(&mut cpu.regs.d, 7)}
+pub fn cbxFB(cpu: &mut Cpu, mmu: &mut Mmu){set_bit(&mut cpu.regs.e, 7)}
+pub fn cbxFC(cpu: &mut Cpu, mmu: &mut Mmu){set_bit(&mut cpu.regs.h, 7)}
+pub fn cbxFD(cpu: &mut Cpu, mmu: &mut Mmu){set_bit(&mut cpu.regs.l, 7)}
+pub fn cbxFE(cpu: &mut Cpu, mmu: &mut Mmu){
+    let mut set = mmu.read(cpu.regs.hl() as usize);
+    set.set_bit(7, 1);
+    mmu.write(cpu.regs.hl() as usize, set);
+}
+pub fn cbxFF(cpu: &mut Cpu, mmu: &mut Mmu){set_bit(&mut cpu.regs.a, 7)}
+fn set_bit(reg: &mut u8, bitno: u8) {
+    *reg |= (1 << bitno);
 }
