@@ -20,6 +20,21 @@ impl Cpu {
         let operation = self.get_operation(mmu);
         (operation.func)(self, mmu);
         mmu.step();
+        self.handle_interrupts(mmu);
+    }
+    fn handle_interrupts(&mut self, mmu: &mut Mmu) {
+        let interrupts = mmu.read(0xFF0F);
+        if interrupts != 0 && mmu.ime {
+            let ie = mmu.read(0xFFFF);
+            let vblank_enabled = ie & 0b1 == 1;
+            if vblank_enabled {
+                let pc = self.regs.pc;
+                self.stack_push_u16(pc as u16, mmu);
+                self.regs.pc = 0x0040;
+                mmu.ime = false;
+            }
+        }
+
     }
     pub fn get_operation(&mut self, mmu: &mut Mmu) -> Operation {
         let first = self.immediate_u8_pc(mmu) as u16;

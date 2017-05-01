@@ -11,7 +11,7 @@ pub struct Ppu {
     vram:         Box<[u8]>,
     oam:          Box<[u8]>,
     control:      Control,   // FF40
-    stat:         Stat,      // FF41
+    pub stat:         Stat,      // FF41
     scroll_y:     usize,     // FF42
     scroll_x:     usize,     // FF43
 

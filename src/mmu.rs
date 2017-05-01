@@ -52,6 +52,7 @@ pub struct Mmu  {
     pub ime: bool,
 }
 
+
 impl Mmu {
     pub fn new(rom: Rom) -> Mmu {
         Mmu {
@@ -71,6 +72,7 @@ impl Mmu {
     }
     pub fn read(&self, address: usize) -> u8 {
         match address {
+            0xFF0F          => self.read_interrupts(),
             0x0000...0x00FF => match self.in_bios {
                 true  	=> self.bios[address],
                 false 	=> self.rom.read(address),
@@ -105,6 +107,10 @@ impl Mmu {
             0xFFFF 			    => self.ie = byte,
             _				        => {}
         }
+    }
+    fn read_interrupts(&self) -> u8 {
+        let interrupts = self.ppu.stat.vblank_int_enable as u8;
+        interrupts
     }
     pub fn read_range(&self, low: usize, high: usize) -> Vec<u8> {
         (low..high).into_iter().map(|x| self.read(x)).collect()

@@ -1,7 +1,6 @@
 use std::fmt;
 use bitty::BitFlags;
 
-
 pub struct FlagRegister {
     pub z: bool,
     pub n: bool,
