@@ -73,7 +73,7 @@ pub fn get_operation(code: u16) -> Operation {
                 0x07 => Operation::new(opx07,  4, "RLCA",        ValueMode::None),
                 0x08 => Operation::new(opx08, 20, "LD ({}), SP", ValueMode::A16),
                 0x09 => Operation::new(opx09,  8, "ADD HL, BC",  ValueMode::None),
-                0x0A => Operation::new(panic,  8, "LD A, (BC)",  ValueMode::None),
+                0x0A => Operation::new(opx0A,  8, "LD A, (BC)",  ValueMode::None),
                 0x0B => Operation::new(opx0B,  8, "DEC BC",      ValueMode::None),
                 0x0C => Operation::new(opx0C,  4, "INC C",       ValueMode::None),
                 0x0D => Operation::new(opx0D,  4, "DEC C",       ValueMode::None),
@@ -292,7 +292,7 @@ pub fn get_operation(code: u16) -> Operation {
             0xC0 => match lcode {
                 0x00 => Operation::new(opxC0, 24, "RET NZ",      ValueMode::None),
                 0x01 => Operation::new(opxC1, 12, "POP BC",      ValueMode::None),
-                0x02 => Operation::new(panic, 16, "JP NZ {}",    ValueMode::A16),
+                0x02 => Operation::new(opxC2, 16, "JP NZ {}",    ValueMode::A16),
                 0x03 => Operation::new(opxC3, 12, "JP {}",       ValueMode::A16),
                 0x04 => Operation::new(opxC4, 24, "CALL NZ, {}", ValueMode::A16),
                 0x05 => Operation::new(opxC5, 16, "PUSH BC",     ValueMode::None),
@@ -346,7 +346,7 @@ pub fn get_operation(code: u16) -> Operation {
                 0x06 => Operation::new(panic,  8, "OR {}",       ValueMode::D8),
                 0x07 => Operation::new(panic, 16, "RST 30H",     ValueMode::None),
                 0x08 => Operation::new(panic, 12, "LD HL SP+{}", ValueMode::R8),
-                0x09 => Operation::new(panic,  8, "LD SP, HL",   ValueMode::None),
+                0x09 => Operation::new(opxF9,  8, "LD SP, HL",   ValueMode::None),
                 0x0A => Operation::new(opxFA, 16, "LD A, ({})",  ValueMode::A16),
                 0x0B => Operation::new(opxFB,  4, "EI",          ValueMode::None),
                 0x0E => Operation::new(opxFE,  8, "CP {}",       ValueMode::D8),
@@ -467,6 +467,7 @@ pub fn get_operation(code: u16) -> Operation {
                 0x0B => Operation::new(cbx7B,  8, "BIT 7,E",       ValueMode::None),
                 0x0C => Operation::new(cbx7C,  8, "BIT 7,H",       ValueMode::None),
                 0x0D => Operation::new(cbx7D,  8, "BIT 7,L",       ValueMode::None),
+                0x0E => Operation::new(cbx7E,  8, "BIT 7,(HL)",    ValueMode::None),
                 0x0F => Operation::new(cbx7F,  8, "BIT 7,A",       ValueMode::None),
                 _   => panic!(format!("Opcode 0x{:04x} is not yet implemented.", code)),
             },
@@ -608,6 +609,10 @@ pub fn opx08(cpu: &mut Cpu, mmu: &mut Mmu){
     mmu.write_u16(addr, cpu.regs.sp as u16);
 }
 pub fn opx09(cpu: &mut Cpu, mmu: &mut Mmu){let v=cpu.regs.bc(); add_hl(cpu, v)}
+pub fn opx0A(cpu: &mut Cpu, mmu: &mut Mmu){
+    let bc = cpu.regs.bc() as usize;
+    cpu.regs.a = mmu.read(bc);
+}
 pub fn opx0B(cpu: &mut Cpu, mmu: &mut Mmu){let bc = cpu.regs.bc(); cpu.regs.set_bc(bc.wrapping_sub(1))}
 pub fn opx0C(cpu: &mut Cpu, mmu: &mut Mmu){inc_x(&mut cpu.regs.c, &mut cpu.regs.flags)}
 pub fn opx0D(cpu: &mut Cpu, mmu: &mut Mmu){dec_x(&mut cpu.regs.c, &mut cpu.regs.flags)}
@@ -757,6 +762,10 @@ pub fn opxCC(cpu: &mut Cpu, mmu: &mut Mmu) {
     }
 }
 
+pub fn opxC2(cpu: &mut Cpu, mmu: &mut Mmu) {
+    // JP NZ,a16
+    cpu.regs.pc = cpu.immediate_u16_pc(mmu) as usize;
+}
 pub fn opxC3(cpu: &mut Cpu, mmu: &mut Mmu) {
     let addr = cpu.immediate_u16_pc(mmu) as usize;
     cpu.regs.pc = addr;
@@ -917,6 +926,7 @@ pub  fn cbx7A(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(7, &mut cpu.regs.d, &mut cp
 pub  fn cbx7B(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(7, &mut cpu.regs.e, &mut cpu.regs.flags)}
 pub  fn cbx7C(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(7, &mut cpu.regs.h, &mut cpu.regs.flags)}
 pub  fn cbx7D(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(7, &mut cpu.regs.l, &mut cpu.regs.flags)}
+pub  fn cbx7E(cpu: &mut Cpu, mmu: &mut Mmu) {let v = &mut mmu.read(cpu.regs.hl() as usize);bit_x_n(7, v, &mut cpu.regs.flags)}
 pub  fn cbx7F(cpu: &mut Cpu, mmu: &mut Mmu) {bit_x_n(7, &mut cpu.regs.a, &mut cpu.regs.flags)}
 
 fn dec_x(reg: &mut u8, flags: &mut FlagRegister) {
@@ -1314,7 +1324,11 @@ fn sub_hc_u16(a: u16, b: u16) -> bool {
 fn sub_c_u8(a: u8, b: u8) -> bool {
     a < b
 }
-
+pub fn opxF9(cpu: &mut Cpu, mmu: &mut Mmu){
+    // LD SP, HL
+    let hl = cpu.regs.hl();
+    cpu.regs.sp = hl as usize;
+}
 pub fn opxFA(cpu: &mut Cpu, mmu: &mut Mmu){
     // LD A, (a16)
     let addr = cpu.immediate_u16_pc(mmu) as usize;
