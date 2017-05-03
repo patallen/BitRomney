@@ -789,7 +789,7 @@ pub fn opxE9(cpu: &mut Cpu, mmu: &mut Mmu) {
 }
 pub fn opxE6(cpu: &mut Cpu, mmu: &mut Mmu) {
     // AND d8
-    let d8 = cpu.immediate_u8(mmu);
+    let d8 = cpu.immediate_u8_pc(mmu);
     cpu.regs.a &= d8;
     cpu.regs.flags.z = cpu.regs.a == 0;
     cpu.regs.flags.h = true;
@@ -1237,7 +1237,7 @@ pub fn xor_a(val: u8, cpu: &mut Cpu) {
     cpu.regs.flags.h = false;
     cpu.regs.flags.c = false;
 }
-pub fn opxEE(cpu: &mut Cpu, mmu: &mut Mmu){let d=cpu.immediate_u8_pc(mmu);xor_a(cpu.regs.a, cpu)}
+pub fn opxEE(cpu: &mut Cpu, mmu: &mut Mmu){let d=cpu.immediate_u8_pc(mmu);xor_a(d, cpu)}
 
 
 pub fn opxA0(cpu: &mut Cpu, mmu: &mut Mmu){and_x(cpu.regs.b, cpu)}
@@ -1372,6 +1372,8 @@ pub fn opxD9(cpu: &mut Cpu, mmu: &mut Mmu) {
 
 pub fn opxC4(cpu: &mut Cpu, mmu: &mut Mmu){
     let addr = cpu.immediate_u16_pc(mmu) as usize;
+    let pc = cpu.regs.pc as u16;
+    cpu.stack_push_u16(pc, mmu);
     if cpu.regs.flags.z == false {
         cpu.regs.pc = addr;
     }
@@ -1508,11 +1510,10 @@ fn cb_sla(reg: &mut u8, flags: &mut FlagRegister) {
 
 
 pub fn opx1F(cpu: &mut Cpu, mmu: &mut Mmu){
-    let a = cpu.regs.a;
-    let c = cpu.regs.c;
-    cpu.regs.a = a >> 1;
-    cpu.regs.a |= c << 7;
-    cpu.regs.c = a >> 7;
+    let carry = cpu.regs.a & 0b1;
+    cpu.regs.a = cpu.regs.a >> 1;
+    cpu.regs.a = cpu.regs.a | ((cpu.regs.flags.c as u8) << 7);
+    cpu.regs.flags.c = carry == 1;
 }
 
 pub fn opx88(cpu: &mut Cpu, mmu: &mut Mmu){let val = cpu.regs.b; op_adc(val, cpu)}
