@@ -989,31 +989,35 @@ pub fn opx28(cpu: &mut Cpu, mmu: &mut Mmu) {
     };
 }
 pub fn opx27(cpu: &mut Cpu, mmu: &mut Mmu) {
-    let a = cpu.regs.a;
-    let lsb = a & 0xF;
-    let msb = a >> 4;
-    let n = cpu.regs.flags.n;
-    if lsb > 9 || cpu.regs.flags.h == true {
-        match n {
-            true => {
-                cpu.regs.a = cpu.regs.a.wrapping_sub(0x06);
-            },
-            false => {
-                cpu.regs.a = cpu.regs.a.wrapping_add(0x06);
-            }
+    let mut newa = cpu.regs.a as u16;
+    if cpu.regs.flags.n == false {
+        if cpu.regs.flags.h == true || (newa & 0xF) > 9 {
+            newa += 0x6;
+        }
+        if cpu.regs.flags.c == true || newa > 0x9F {
+            newa += 0x60;
+        }
+    } else {
+        if cpu.regs.flags.h {
+            newa = (newa - 6) & 0xFF;
+        }
+        if cpu.regs.flags.c {
+            newa -= 0x60;
         }
     }
-    if msb > 9 || cpu.regs.flags.c == true {
-        match n {
-            true => {
-                cpu.regs.a = cpu.regs.a.wrapping_sub(0x60);
-            },
-            false => {
-                cpu.regs.a = cpu.regs.a.wrapping_add(0x60);
-            }
-        }
+    if (newa & 0x100) == 0x100 {
+        cpu.regs.flags.c = true;
     }
+
+    cpu.regs.flags.h = false;
+    cpu.regs.flags.z = false;
+    newa &= 0xFF;
+    if newa == 0 {
+        cpu.regs.flags.z = true;
+    }
+    cpu.regs.a = newa as u8;
 }
+
 pub fn opxF3(cpu: &mut Cpu, mmu: &mut Mmu){
     mmu.ime = false;
 }
