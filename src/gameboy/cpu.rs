@@ -10,9 +10,9 @@ pub struct Cpu {
 
 
 impl Cpu {
-    pub fn new() -> Cpu {
+    pub fn new(registers: Registers) -> Cpu {
         Cpu {
-            regs: Registers::new(),
+            regs: registers,
             counter: 0,
         }
     }

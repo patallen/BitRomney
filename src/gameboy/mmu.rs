@@ -65,7 +65,7 @@ impl Mmu {
             echo: 	 Box::new([0; 0x2000]),
             hram: 	 Box::new([0; 0x80]),
             io: 	 Box::new([0; 0x80]),
-            in_bios: false,
+            in_bios: true,
             ie: 	 0,
             ime:     false,
         }
@@ -88,7 +88,7 @@ impl Mmu {
             0xFF00...0xFF7F => self.io[address - 0xFF00],
             0xFF80...0xFFFE => self.hram[address - 0xFF80],
             0xFFFF 			    => self.ie,
-            _				        => panic!("{:04X} is an unused address.", address),
+            _				    => panic!("{:04X} is an unused address.", address),
         }
     }
     pub fn write(&mut self, address: usize, byte: u8) {

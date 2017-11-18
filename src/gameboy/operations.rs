@@ -1408,9 +1408,7 @@ pub fn cbx84(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.h, 0)}
 pub fn cbx85(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.l, 0)}
 pub fn cbx86(cpu: &mut Cpu, mmu: &mut Mmu){let r = &mut mmu.read(cpu.regs.hl() as usize); cb_res(r, 0)}
 pub fn cbx87(cpu: &mut Cpu, mmu: &mut Mmu){
-    println!("Byte: {:08b}", cpu.regs.a);
     cb_res(&mut cpu.regs.a, 0);
-    println!("Byte: {:08b}", cpu.regs.a);
 }
 pub fn cbx88(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.b, 1)}
 pub fn cbx89(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.c, 1)}
@@ -1472,9 +1470,7 @@ pub fn cbxBD(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.l, 7)}
 pub fn cbxBE(cpu: &mut Cpu, mmu: &mut Mmu){let r = &mut mmu.read(cpu.regs.hl() as usize); cb_res(r, 7)}
 pub fn cbxBF(cpu: &mut Cpu, mmu: &mut Mmu){cb_res(&mut cpu.regs.a, 7)}
 
-fn cb_res(reg: &mut u8, bit: usize) {
-    *reg &= !(1 << bit);
-}
+fn cb_res(reg: &mut u8, bit: usize) { *reg &= !(1 << bit); }
 
 pub fn cbx18(cpu: &mut Cpu, mmu: &mut Mmu){let f = &mut cpu.regs.flags; cb_rr(&mut cpu.regs.b, f)}
 pub fn cbx19(cpu: &mut Cpu, mmu: &mut Mmu){let f = &mut cpu.regs.flags; cb_rr(&mut cpu.regs.c, f)}
@@ -1554,5 +1550,5 @@ pub fn cbxFE(cpu: &mut Cpu, mmu: &mut Mmu){
 }
 pub fn cbxFF(cpu: &mut Cpu, mmu: &mut Mmu){set_bit(&mut cpu.regs.a, 7)}
 fn set_bit(reg: &mut u8, bitno: u8) {
-    *reg |= (1 << bitno);
+    *reg |= 1 << bitno;
 }

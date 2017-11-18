@@ -64,7 +64,7 @@ impl Registers {
             a: 0,
             flags: FlagRegister::new(),
             sp: 0xFFFE,
-            pc: 0x100,
+            pc: 0x000,
         }
     }
     pub fn bc(&self) -> u16 {
