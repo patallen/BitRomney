@@ -1,8 +1,8 @@
 use std::fmt;
 
-use cpu::Cpu;
-use mmu::Mmu;
-use registers::FlagRegister;
+use gameboy::cpu::Cpu;
+use gameboy::mmu::Mmu;
+use gameboy::registers::FlagRegister;
 
 use bitty::BitFlags;
 

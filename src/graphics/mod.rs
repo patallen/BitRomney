@@ -1,5 +1,5 @@
+pub mod display;
 use std::fmt;
-
 
 pub struct Control {
     pub lcd_enable:        bool, // Can only be done during V-Blank

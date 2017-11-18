@@ -1,6 +1,6 @@
-use mmu::Mmu;
-use registers::{Registers};
-use operations::{get_operation, Operation};
+use gameboy::mmu::Mmu;
+use gameboy::registers::{Registers};
+use gameboy::operations::{get_operation, Operation};
 
 
 pub struct Cpu {

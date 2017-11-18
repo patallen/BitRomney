@@ -5,7 +5,7 @@ use std::process;
 use std::io::{stdout, stdin, Write};
 
 use gameboy::Gameboy;
-use operations::{Operation, ValueMode, get_operation};
+use gameboy::operations::{Operation, ValueMode, get_operation};
 use self::command::{Command, build_step, build_show, build_set, ShowType, SetType};
 
 

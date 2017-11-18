@@ -1,5 +1,5 @@
-use rom::Rom;
-use ppu::Ppu;
+use gameboy::rom::Rom;
+use gameboy::ppu::Ppu;
 
 
 const BOOT_ROM: [u8; 0x100] = [
@@ -38,17 +38,17 @@ const BOOT_ROM: [u8; 0x100] = [
 ];
 
 pub struct Mmu  {
-    rom:	  Rom,
-    pub ppu:Ppu,
-    bios: 	Box<[u8]>,
-    sram: 	Box<[u8]>,
-    wramo: 	Box<[u8]>,
-    wramx: 	Box<[u8]>,
-    echo: 	Box<[u8]>,
-    hram: 	Box<[u8]>,
-    io: 	  Box<[u8]>,
-    in_bios:bool,
-	  ie: 	  u8,
+    rom:	 Rom,
+    pub ppu: Ppu,
+    bios: 	 Box<[u8]>,
+    sram: 	 Box<[u8]>,
+    wramo: 	 Box<[u8]>,
+    wramx: 	 Box<[u8]>,
+    echo: 	 Box<[u8]>,
+    hram:  	 Box<[u8]>,
+    io: 	 Box<[u8]>,
+    in_bios: bool,
+    ie: 	 u8,
     pub ime: bool,
 }
 
@@ -64,9 +64,9 @@ impl Mmu {
             wramx: 	 Box::new([0; 0x1000]),
             echo: 	 Box::new([0; 0x2000]),
             hram: 	 Box::new([0; 0x80]),
-            io: 	   Box::new([0; 0x80]),
+            io: 	 Box::new([0; 0x80]),
             in_bios: false,
-            ie: 	   0,
+            ie: 	 0,
             ime:     false,
         }
     }

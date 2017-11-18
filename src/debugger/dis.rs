@@ -1,5 +1,5 @@
 use std::fmt;
-use rom::Rom;
+use gameboy::rom::Rom;
 use std::collections::BTreeMap;
 
 pub struct Disassembler {
