@@ -6,8 +6,8 @@ use std::str;
 const TITLE_START_ADDR: usize = 0x0134;
 
 pub struct Rom {
-	  data: Vec<u8>,
-	  filename: String,
+	data: Vec<u8>,
+	filename: String,
     pub size: usize,
 }
 

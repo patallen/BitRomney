@@ -1,11 +1,14 @@
 mod command;
 pub mod dis;
 
+use sdl2;
+use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
 use std::process;
 use std::io::{stdout, stdin, Write};
 
 use gameboy::Gameboy;
-use gameboy::operations::{Operation, ValueMode, get_operation};
+use gameboy::operations::{Operation, get_operation};
 use self::command::{Command, build_step, build_show, build_set, ShowType, SetType};
 
 
@@ -26,22 +29,36 @@ pub struct Debugger {
     mode: DebugMode,
     gameboy: Gameboy,
     step_distance: u32,
+    events: sdl2::EventPump,
 }
 
 impl Debugger {
-    pub fn new(rompath: &str) -> Debugger {
+    pub fn new(gameboy: Gameboy, event_pump: sdl2::EventPump) -> Debugger {
         Debugger {
             tracepoints: Vec::new(),
             breakpoints: Vec::new(),
-            gameboy: Gameboy::new(rompath),
+            gameboy: gameboy,
             mode: DebugMode::Repl,
             step_distance: 10,
+            events: event_pump
         }
     }
     fn cycle(&mut self) {
+        self.handle_events();
         self.gameboy.step();
-        self.print();
+        // self.print();
         self.check_breakpoints();
+    }
+
+    fn handle_events(&mut self) {
+        for event in self.events.poll_iter() {
+            match event {
+                Event::Quit {..} | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
+                    self.mode = DebugMode::Repl
+                },
+                _ => {}
+            }
+        }
     }
     fn print(&mut self) {
         let first = self.gameboy.mmu.read(self.gameboy.cpu.regs.pc) as u16;
