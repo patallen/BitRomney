@@ -5,3 +5,5 @@ authors = ["Patrick Allen <prallen90@gmail.com>"]
 
 [dependencies]
 sdl2 = "0.29.1"
+log4rs = "0.7.0"
+log = "0.3.8"
