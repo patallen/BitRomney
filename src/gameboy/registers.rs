@@ -97,7 +97,9 @@ impl Registers {
     }
     pub fn set_hl(&mut self, val: u16) {
         self.h = ((val & 0xFF00) >> 8) as u8;
+        info!("Setting H to: {:02X}", self.h);
         self.l = (val & 0xFF) as u8;
+        info!("Setting L to: {:02X}", self.l);
     }
     pub fn set_af(&mut self, val: u16) {
         self.a = (val & 0xFF00) as u8;

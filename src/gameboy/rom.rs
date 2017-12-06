@@ -27,15 +27,13 @@ impl Rom {
     }
     pub fn read(&self, address: usize) -> u8{
         match address {
-        0x0000...0x3FFF => self.data[address],
-        0x0400...0x7FFF => self.data[address],
+        0x0000...0x7FFF => self.data[address],
         _ => panic!("Memory Address {:X} does not belong to the ROM", address)
         }
     }
     pub fn write(&mut self, address: usize, byte: u8) {
         match address {
-        0x0000...0x3FFF => self.data[address] = byte,
-        0x0400...0x7FFF => self.data[address] = byte,
+        0x0000...0x7FFF => self.data[address] = byte,
         _ => panic!("Memory Address {:X} does not belong to the ROM", address)
         }
     }

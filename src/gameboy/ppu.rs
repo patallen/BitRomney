@@ -11,7 +11,7 @@ pub struct Ppu {
     vram:         Box<[u8]>,
     oam:          Box<[u8]>,
     control:      Control,   // FF40
-    pub stat:         Stat,      // FF41
+    pub stat:     Stat,      // FF41
     scroll_y:     usize,     // FF42
     scroll_x:     usize,     // FF43
 
@@ -68,7 +68,7 @@ impl Ppu {
         Tile::new(slice)
     }
     pub fn read_u8(&self, loc: usize) -> u8 {
-        match loc {
+        let result = match loc {
             0x8000...0x9FFF => self.vram[loc - 0x8000],
             0xFE00...0xFE9F => self.oam[loc - 0xFE00],
             0xFF40 => self.control.read_u8(),
@@ -84,7 +84,9 @@ impl Ppu {
             0xFF4A => self.window_y,
             0xFF4B => self.window_x,
             _      => panic!("{} is not a valid Ppu-mapped address.", loc),
-        }
+        };
+        info!("Memory Read: {:04X} @ Loc:{:04X}", result, loc);
+        result
     }
     pub fn write_u8(&mut self, loc: usize, value: u8) {
         match loc {
@@ -105,6 +107,7 @@ impl Ppu {
             _      => panic!("{} is not a valid Ppu-mapped address.", loc),
         };
     }
+
     pub fn tile_line(&self, x: usize) -> &[u8] {
         let base = match self.control.bg_tilemap_select {
             true => (0x1C00 + x),

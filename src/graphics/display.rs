@@ -13,7 +13,6 @@ pub struct Display {
     texture: Texture,
     prev_texture: Texture,
 }
-
 impl Display {
     pub fn new(context: ::sdl2::Sdl) -> Display {
         let width = DISPLAY_WIDTH;

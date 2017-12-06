@@ -46,7 +46,7 @@ impl Debugger {
     fn cycle(&mut self) {
         self.handle_events();
         self.gameboy.step();
-        // self.print();
+        self.log();
         self.check_breakpoints();
     }
 
@@ -60,7 +60,7 @@ impl Debugger {
             }
         }
     }
-    fn print(&mut self) {
+    fn log(&mut self) {
         let first = self.gameboy.mmu.read(self.gameboy.cpu.regs.pc) as u16;
         let code = match self.gameboy.mmu.read(self.gameboy.cpu.regs.pc) {
             0xCB => { first << 8 | self.gameboy.mmu.read(self.gameboy.cpu.regs.pc + 1) as u16 },
@@ -69,7 +69,7 @@ impl Debugger {
         let op = get_operation(code);
         let mmu = &self.gameboy.mmu;
         let cpu = &self.gameboy.cpu;
-        println!("(PC:{:04X}|SP:{:04X}) -> 0x{:04X} -> {}",
+        info!("(PC:{:04X}|SP:{:04X}) -> 0x{:04X} -> {}",
                  self.gameboy.cpu.regs.pc, self.gameboy.cpu.regs.sp, code, op.disassemble(cpu, mmu));
     }
     fn check_breakpoints(&mut self) {

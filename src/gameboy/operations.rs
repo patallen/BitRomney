@@ -1,5 +1,4 @@
 use std::fmt;
-
 use gameboy::cpu::Cpu;
 use gameboy::mmu::Mmu;
 use gameboy::registers::FlagRegister;
@@ -615,7 +614,10 @@ pub fn opx0A(cpu: &mut Cpu, mmu: &mut Mmu){
 }
 pub fn opx0B(cpu: &mut Cpu, mmu: &mut Mmu){let bc = cpu.regs.bc(); cpu.regs.set_bc(bc.wrapping_sub(1))}
 pub fn opx0C(cpu: &mut Cpu, mmu: &mut Mmu){inc_x(&mut cpu.regs.c, &mut cpu.regs.flags)}
-pub fn opx0D(cpu: &mut Cpu, mmu: &mut Mmu){dec_x(&mut cpu.regs.c, &mut cpu.regs.flags)}
+pub fn opx0D(cpu: &mut Cpu, mmu: &mut Mmu){
+    dec_x(&mut cpu.regs.c, &mut cpu.regs.flags);
+    info!("Decremented Register C to 0x{:04X}", cpu.regs.c);
+}
 pub fn opx0E(cpu: &mut Cpu, mmu: &mut Mmu){let v = cpu.immediate_u8_pc(mmu); ld_x_y(&mut cpu.regs.c, v)}
 pub fn opx0F(cpu: &mut Cpu, mmu: &mut Mmu){
     let c = cpu.regs.flags.c;
@@ -638,7 +640,7 @@ pub fn opx20(cpu: &mut Cpu, mmu: &mut Mmu) {
     if cpu.regs.flags.z == true {
         return {}
     };
-
+    // TODO: problem?
     match signed > 0 {
         true => cpu.regs.pc += signed.abs() as usize,
         _ => cpu.regs.pc -= signed.abs() as usize
@@ -692,6 +694,7 @@ pub fn opx32(cpu: &mut Cpu, mmu: &mut Mmu) {
     let a = cpu.regs.a;
     mmu.write(addr, a);
     cpu.regs.set_hl((addr as u16).wrapping_sub(1));
+    info!("\n\nH: 0b{:08b}\n", cpu.regs.h);
 }
 pub fn opx33(cpu: &mut Cpu, mmu: &mut Mmu){
     let val = cpu.regs.sp;
@@ -821,7 +824,7 @@ pub fn opxFE(cpu: &mut Cpu, mmu: &mut Mmu) {
     let a = cpu.regs.a;
     let d8 = cpu.immediate_u8_pc(mmu);
     let hc = sub_hc_u8(a, d8);
-    cpu.regs.flags.z = a == d8;
+    cpu.regs.flags.z = a - d8  == 0;
     cpu.regs.flags.c = a < d8;
     cpu.regs.flags.n = true;
     cpu.regs.flags.h = hc;
@@ -867,7 +870,8 @@ fn bit_x_n(bit_no: usize, reg: &mut u8, flags: &mut FlagRegister) {
     // BIT x, n
     // Clear the zero flag if bit x of register n == 1
     // set N flag to 0 and H flag to 1
-    flags.z = reg.get_bit(bit_no) == 0;
+    flags.z = reg.get_bit(bit_no) == 1;
+    info!("Z: {}", flags.z);
     flags.n = false;
     flags.h = true;
 }
