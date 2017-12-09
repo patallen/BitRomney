@@ -1,11 +1,11 @@
 use gameboy::mmu::Mmu;
-use gameboy::registers::{Registers};
+use gameboy::registers::Registers;
 use gameboy::operations::{get_operation, Operation};
 
 
 pub struct Cpu {
     pub regs: Registers,
-    pub counter: u8,    // Will count down until next instruction
+    pub counter: u8, // Will count down until next instruction
 }
 
 
@@ -39,8 +39,8 @@ impl Cpu {
     pub fn get_operation(&mut self, mmu: &mut Mmu) -> Operation {
         let first = self.immediate_u8_pc(mmu) as u16;
         let code = match first {
-            0xCB => { first << 8 | self.immediate_u8_pc(mmu) as u16 },
-            _ => first
+            0xCB => first << 8 | self.immediate_u8_pc(mmu) as u16,
+            _ => first,
         };
         get_operation(code)
     }
@@ -65,16 +65,16 @@ impl Cpu {
         self.regs.pc += 2;
         res
     }
-    pub fn stack_pop_u8(&mut self, mmu: &mut Mmu) -> u8 {
-        self.regs.sp += 1;
-        let sp = self.regs.sp as usize;
-        mmu.read(sp)
-    }
-    pub fn stack_push_u8(&mut self, val: u8, mmu: &mut Mmu) {
-        let sp = self.regs.sp as usize;
-        mmu.write(sp, val);
-        self.regs.sp -= 1;
-    }
+    //     pub fn stack_pop_u8(&mut self, mmu: &mut Mmu) -> u8 {
+    //         self.regs.sp += 1;
+    //         let sp = self.regs.sp as usize;
+    //         mmu.read(sp)
+    //     }
+    //     pub fn stack_push_u8(&mut self, val: u8, mmu: &mut Mmu) {
+    //         let sp = self.regs.sp as usize;
+    //         mmu.write(sp, val);
+    //         self.regs.sp -= 1;
+    //     }
     pub fn stack_pop_u16(&mut self, mmu: &mut Mmu) -> u16 {
         self.regs.sp += 1;
         let sp = self.regs.sp as usize;
@@ -88,5 +88,4 @@ impl Cpu {
         mmu.write_u16(sp, val);
         self.regs.sp -= 1;
     }
-
 }

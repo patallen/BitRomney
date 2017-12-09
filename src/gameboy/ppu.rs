@@ -1,4 +1,3 @@
-use std::fmt;
 use graphics::{Control, Palette, Stat, Tile, Shade};
 
 
@@ -55,10 +54,7 @@ impl Ppu {
             window_x: 0,
         }
     }
-    fn read_bg_map(&self, x: usize, y: usize) -> usize {
-        let idx = 32 * y + x;
-        self.vram[idx + 0x9800] as usize
-    }
+
     fn get_tile(&self, tile_no: usize) -> Tile {
         let idx = match self.control.bg_data_select {
             false => ((tile_no.wrapping_add(128) as u16) * 16 + 0x800) as usize,

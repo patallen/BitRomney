@@ -13,9 +13,13 @@ pub trait BigEndian {
 }
 
 impl LittleEndian for u16 {
-    fn get_msb(&self) -> u8 { (*self & 0xFF) as u8 }
+    fn get_msb(&self) -> u8 {
+        (*self & 0xFF) as u8
+    }
 
-    fn get_lsb(&self) -> u8 { ((*self & 0xFF00) >> 8) as u8 }
+    fn get_lsb(&self) -> u8 {
+        ((*self & 0xFF00) >> 8) as u8
+    }
 
     fn set_msb(&mut self, byte: u8) {
         *self &= 0xFF00;
@@ -29,9 +33,13 @@ impl LittleEndian for u16 {
 }
 
 impl BigEndian for u16 {
-    fn get_lsb(&self) -> u8 { (*self & 0xFF) as u8 }
+    fn get_lsb(&self) -> u8 {
+        (*self & 0xFF) as u8
+    }
 
-    fn get_msb(&self) -> u8 { ((*self & 0xFF00) >> 8) as u8 }
+    fn get_msb(&self) -> u8 {
+        ((*self & 0xFF00) >> 8) as u8
+    }
 
     fn set_lsb(&mut self, byte: u8) {
         *self &= 0xFF00;
@@ -52,7 +60,9 @@ pub trait BitFlags {
 }
 
 impl BitFlags for u8 {
-    fn get_bit(&self, bitno: usize) -> u8 { (*self >> bitno) & 0b1 }
+    fn get_bit(&self, bitno: usize) -> u8 {
+        (*self >> bitno) & 0b1
+    }
 
     fn set_bit(&mut self, bitno: usize, bit: u8) {
         let bit = match bit {

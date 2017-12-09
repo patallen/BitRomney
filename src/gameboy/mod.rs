@@ -27,11 +27,7 @@ impl Gameboy {
         };
         gb
     }
-    pub fn run(&mut self) {
-        loop {
-            self.step();
-        }
-    }
+
     pub fn step(&mut self) {
         self.cpu.cycle(&mut self.mmu);
         sleep(Duration::from_millis(0));

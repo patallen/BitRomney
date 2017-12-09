@@ -8,7 +8,7 @@ use std::process;
 use std::io::{stdout, stdin, Write};
 
 use gameboy::Gameboy;
-use gameboy::operations::{Operation, get_operation};
+use gameboy::operations::get_operation;
 use self::command::{Command, build_step, build_show, build_set, ShowType, SetType};
 
 
@@ -24,7 +24,7 @@ enum DebugMode {
 }
 
 pub struct Debugger {
-    tracepoints: Vec<u16>,
+    // tracepoints: Vec<u16>,
     breakpoints: Vec<usize>,
     mode: DebugMode,
     gameboy: Gameboy,
@@ -35,12 +35,12 @@ pub struct Debugger {
 impl Debugger {
     pub fn new(gameboy: Gameboy, event_pump: sdl2::EventPump) -> Debugger {
         Debugger {
-            tracepoints: Vec::new(),
+            // tracepoints: Vec::new(),
             breakpoints: Vec::new(),
             gameboy: gameboy,
             mode: DebugMode::Repl,
             step_distance: 10,
-            events: event_pump
+            events: event_pump,
         }
     }
     fn cycle(&mut self) {
@@ -53,9 +53,10 @@ impl Debugger {
     fn handle_events(&mut self) {
         for event in self.events.poll_iter() {
             match event {
-                Event::Quit {..} | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
+                Event::Quit { .. } |
+                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                     self.mode = DebugMode::Repl
-                },
+                }
                 _ => {}
             }
         }
@@ -63,14 +64,19 @@ impl Debugger {
     fn log(&mut self) {
         let first = self.gameboy.mmu.read(self.gameboy.cpu.regs.pc) as u16;
         let code = match self.gameboy.mmu.read(self.gameboy.cpu.regs.pc) {
-            0xCB => { first << 8 | self.gameboy.mmu.read(self.gameboy.cpu.regs.pc + 1) as u16 },
-            _ => first
+            0xCB => first << 8 | self.gameboy.mmu.read(self.gameboy.cpu.regs.pc + 1) as u16,
+            _ => first,
         };
         let op = get_operation(code);
         let mmu = &self.gameboy.mmu;
         let cpu = &self.gameboy.cpu;
-        info!("(PC:{:04X}|SP:{:04X}) -> 0x{:04X} -> {}",
-                 self.gameboy.cpu.regs.pc, self.gameboy.cpu.regs.sp, code, op.disassemble(cpu, mmu));
+        info!(
+            "(PC:{:04X}|SP:{:04X}) -> 0x{:04X} -> {}",
+            self.gameboy.cpu.regs.pc,
+            self.gameboy.cpu.regs.sp,
+            code,
+            op.disassemble(cpu, mmu)
+        );
     }
     fn check_breakpoints(&mut self) {
         let pc = self.gameboy.cpu.regs.pc;
@@ -84,19 +90,19 @@ impl Debugger {
         }
         self.mode = DebugMode::Repl;
     }
-    fn next_operation(&mut self) -> Operation {
-        let first = self.gameboy.mmu.read(self.gameboy.cpu.regs.pc) as u16;
-        let code = match self.gameboy.mmu.read(self.gameboy.cpu.regs.pc) {
-            0xCB => { first << 8 | self.gameboy.mmu.read(self.gameboy.cpu.regs.pc + 1) as u16 },
-            _ => first
-        };
-        get_operation(code)
-    }
+    // fn next_operation(&mut self) -> Operation {
+    //     let first = self.gameboy.mmu.read(self.gameboy.cpu.regs.pc) as u16;
+    //     let code = match self.gameboy.mmu.read(self.gameboy.cpu.regs.pc) {
+    //         0xCB => first << 8 | self.gameboy.mmu.read(self.gameboy.cpu.regs.pc + 1) as u16,
+    //         _ => first,
+    //     };
+    //     get_operation(code)
+    // }
     pub fn run(&mut self) {
         loop {
             match self.mode {
                 DebugMode::Repl => self.repl(),
-                DebugMode::Restarting => {},
+                DebugMode::Restarting => {}
                 DebugMode::Quitting => process::exit(1),
                 DebugMode::Running => self.cycle(),
                 DebugMode::Stepping => self.step(),
@@ -104,22 +110,25 @@ impl Debugger {
         }
     }
     fn repl(&mut self) {
-        /// The Repl is a single function that allows the user to
-        /// change the state of the debugger and or emulator using a set
-        /// of comprehensive commands and arguments.
         loop {
             print!("gbdb> ");
             stdout().flush().unwrap();
 
             match parse_input(&read_stdin()) {
-                Ok(command) => {self.handle_command(command); break;}
-                Err(error) => {println!("{}", error)}
+                Ok(command) => {
+                    self.handle_command(command);
+                    break;
+                }
+                Err(error) => println!("{}", error),
             };
         }
     }
     fn handle_command(&mut self, command: Command) {
         match command {
-            Command::Step(dist) => {self.step_distance = dist; self.mode = DebugMode::Stepping },
+            Command::Step(dist) => {
+                self.step_distance = dist;
+                self.mode = DebugMode::Stepping
+            }
             Command::Restart => self.mode = DebugMode::Restarting,
             Command::Resume => self.mode = DebugMode::Running,
             Command::Quit => self.mode = DebugMode::Quitting,
@@ -130,9 +139,8 @@ impl Debugger {
     }
     fn set(&mut self, settype: SetType) {
         match settype {
-            SetType::Breakpoint(val) => { self.breakpoints.push(val)},
-            SetType::Memory(loc, val) => { self.set_memory(loc, val)},
-            _ => println!("Set type not currenty supported.")
+            SetType::Breakpoint(val) => self.breakpoints.push(val),
+            SetType::Memory(loc, val) => self.set_memory(loc, val),
         }
     }
     fn set_memory(&mut self, loc: usize, val: u8) {
@@ -144,7 +152,6 @@ impl Debugger {
             ShowType::Registers => self.print_registers(),
             ShowType::Tracepoints => self.print_tracepoints(),
             ShowType::Memory(low, hi) => self.print_memory(low, hi),
-            ShowType::Breakpoints => self.print_breakpoints(),
         }
     }
     fn print_help(&self) {
@@ -168,19 +175,36 @@ impl Debugger {
     fn print_registers(&self) {
         let regs = &self.gameboy.cpu.regs;
         println!("-----8-bit Registers-----");
-        println!("B: {:02X} | C: {:02X} || BC: {:04X}", regs.b, regs.c, regs.bc());
-        println!("D: {:02X} | E: {:02X} || DE: {:04X}", regs.d, regs.e, regs.de());
-        println!("H: {:02X} | L: {:02X} || HL: {:04X}", regs.h, regs.l, regs.hl());
-        println!("A: {:02X} | F: {:02X} || AF: {:04X}", regs.a, regs.flags.as_u8(), regs.af());
+        println!(
+            "B: {:02X} | C: {:02X} || BC: {:04X}",
+            regs.b,
+            regs.c,
+            regs.bc()
+        );
+        println!(
+            "D: {:02X} | E: {:02X} || DE: {:04X}",
+            regs.d,
+            regs.e,
+            regs.de()
+        );
+        println!(
+            "H: {:02X} | L: {:02X} || HL: {:04X}",
+            regs.h,
+            regs.l,
+            regs.hl()
+        );
+        println!(
+            "A: {:02X} | F: {:02X} || AF: {:04X}",
+            regs.a,
+            regs.flags.as_u8(),
+            regs.af()
+        );
         println!("----Address Registers----");
         println!("  PC: {:04X} | SP: {:04X}", regs.pc, regs.sp);
         println!("----------Flags----------");
         println!("{:?}", self.gameboy.cpu.regs.flags);
     }
-    fn print_tracepoints(&self) {
-    }
-    fn print_breakpoints(&self) {
-    }
+    fn print_tracepoints(&self) {}
     fn print_memory(&self, low: u16, hi: u16) {
         let mem_width = MEM_DISPLAY_WIDTH as usize;
         let l = low as usize / mem_width * mem_width;
@@ -190,11 +214,18 @@ impl Debugger {
 
         let mut lines: Vec<String> = Vec::new();
         for (i, ch) in mems.as_slice().chunks(mem_width).enumerate() {
-            let string = ch.into_iter().map(|x| format!("{:02X}", x)).collect::<Vec<_>>().join(" ");
+            let string = ch.into_iter()
+                .map(|x| format!("{:02X}", x))
+                .collect::<Vec<_>>()
+                .join(" ");
             let line = format!("0x{:04X} | {}", i * mem_width + l as usize, string);
             lines.push(line);
         }
-        let header = (0..mem_width).into_iter().map(|x| format!("{:02X}", x)).collect::<Vec<_>>().join(" ");
+        let header = (0..mem_width)
+            .into_iter()
+            .map(|x| format!("{:02X}", x))
+            .collect::<Vec<_>>()
+            .join(" ");
         println!("       | {}", header);
         println!("--------------------------------------------------------");
         println!("{}", lines.join("\n"));
@@ -206,15 +237,15 @@ fn parse_input(text: &str) -> Result<Command, &str> {
     let parts: Vec<&str> = text.split(" ").collect();
     let next_parts = &parts[1..].to_vec();
     match parts[0] {
-        "show" | "print"          => build_show(next_parts),
-        "step"                    => build_step(next_parts),
-        "set"                     => build_set(next_parts),
-        "restart" | "r"           => Ok(Command::Restart),
+        "show" | "print" => build_show(next_parts),
+        "step" => build_step(next_parts),
+        "set" => build_set(next_parts),
+        "restart" | "r" => Ok(Command::Restart),
         "go" | "resume" | "start" => Ok(Command::Resume),
-        "exit" | "quit" | "q"     => Ok(Command::Quit),
-        "help" | "h"              => Ok(Command::Help),
-        ""                        => build_step(&vec!["1"]),
-        _                         => return Err("Invalid command.")
+        "exit" | "quit" | "q" => Ok(Command::Quit),
+        "help" | "h" => Ok(Command::Help),
+        "" => build_step(&vec!["1"]),
+        _ => return Err("Invalid command."),
     }
 }
 
@@ -231,12 +262,12 @@ fn str_to_u16(string: &str) -> Result<u16, &str> {
         string = &string[2..];
         match u16::from_str_radix(string, 16) {
             Ok(res) => return Ok(res),
-            _ => return Err("Could not convert to u16 from hex string.")
+            _ => return Err("Could not convert to u16 from hex string."),
         }
     } else {
         match str::parse::<u16>(string) {
             Ok(res) => return Ok(res),
-            _ => return Err("Could not convert to u16 from string.")
+            _ => return Err("Could not convert to u16 from string."),
         }
     }
 }

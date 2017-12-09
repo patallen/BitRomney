@@ -3,9 +3,9 @@ use sdl2::pixels::PixelFormatEnum;
 use sdl2::video::Window;
 use sdl2::rect::Rect;
 
-const DISPLAY_WIDTH: u32 = 160;
-const DISPLAY_HEIGHT: u32 = 144;
-const SCALE: u32 = 4;
+const DISPLAY_WIDTH_PIXELS: u32 = 160;
+const DISPLAY_HEIGHT_PIXELS: u32 = 144;
+const SCALE: u32 = 5;
 const TITLE: &'static str = "BitRomney GB";
 // const BACKGROUND: (u8, u8, u8) = (155, 188, 15);
 
@@ -22,7 +22,11 @@ impl Display {
         let window = context
             .video()
             .unwrap()
-            .window(TITLE, DISPLAY_WIDTH * SCALE, DISPLAY_HEIGHT * SCALE)
+            .window(
+                TITLE,
+                DISPLAY_WIDTH_PIXELS * SCALE,
+                DISPLAY_HEIGHT_PIXELS * SCALE,
+            )
             .position_centered()
             .opengl()
             .build()
@@ -31,8 +35,8 @@ impl Display {
 
         Display {
             canvas: canvas,
-            width: DISPLAY_WIDTH,
-            height: DISPLAY_HEIGHT,
+            width: DISPLAY_WIDTH_PIXELS,
+            height: DISPLAY_HEIGHT_PIXELS,
             scale: SCALE,
         }
     }
