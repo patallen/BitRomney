@@ -1,5 +1,5 @@
-use std::fmt;
 use bitty::BitFlags;
+use std::fmt;
 
 pub struct FlagRegister {
     pub z: bool,
@@ -38,10 +38,7 @@ impl fmt::Debug for FlagRegister {
         write!(
             f,
             "Z: {} | N: {} | H: {} | C: {}",
-            self.z as u8,
-            self.n as u8,
-            self.h as u8,
-            self.c as u8
+            self.z as u8, self.n as u8, self.h as u8, self.c as u8
         )
     }
 }
@@ -118,14 +115,7 @@ impl fmt::Debug for Registers {
         write!(
             f,
             "{:?}\nA:{:02X} | B:{:02X} | C:{:02X} | D:{:02X} | E:{:02X} | H:{:02X} | L:{:02X}\n",
-            self.flags,
-            self.a,
-            self.b,
-            self.c,
-            self.d,
-            self.e,
-            self.h,
-            self.l
+            self.flags, self.a, self.b, self.c, self.d, self.e, self.h, self.l
         )
     }
 }

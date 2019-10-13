@@ -1,6 +1,5 @@
 use debugger::str_to_u16;
 
-
 #[derive(Debug)]
 pub enum ShowType {
     Memory(u16, u16),
@@ -29,7 +28,6 @@ pub enum Command {
     Help,
 }
 
-
 pub fn build_step(parts: &Vec<&str>) -> Result<Command, &'static str> {
     match parts[0].parse::<u32>() {
         Ok(val) => Ok(Command::Step(val)),
@@ -42,12 +40,10 @@ pub fn build_show(parts: &Vec<&str>) -> Result<Command, &'static str> {
     let showtype = match st {
         "regs" | "registers" => ShowType::Registers,
         "tracepoints" | "tps" | "traces" => ShowType::Tracepoints,
-        "mem" | "memory" => {
-            match _build_memory_type(&parts[1..].to_vec()) {
-                Ok(memtype) => memtype,
-                Err(err) => return Err(err),
-            }
-        }
+        "mem" | "memory" => match _build_memory_type(&parts[1..].to_vec()) {
+            Ok(memtype) => memtype,
+            Err(err) => return Err(err),
+        },
         _ => return Err("That is not a valid 'show' type."),
     };
     Ok(Command::Show(showtype))
@@ -55,20 +51,15 @@ pub fn build_show(parts: &Vec<&str>) -> Result<Command, &'static str> {
 pub fn build_set(parts: &Vec<&str>) -> Result<Command, &'static str> {
     let st = parts[0];
     let settype = match st {
-        "bp" | "breakpoint" | "break" => {
-            match _build_breakpoint(&parts) {
-                Ok(settype) => settype,
-                Err(err) => return Err(err),
-            }
-        }
-        "mem" | "memory" | "m" => {
-            match _build_memory_set(&parts) {
-                Ok(settype) => settype,
-                Err(err) => return Err(err),
-            }
-        }
+        "bp" | "breakpoint" | "break" => match _build_breakpoint(&parts) {
+            Ok(settype) => settype,
+            Err(err) => return Err(err),
+        },
+        "mem" | "memory" | "m" => match _build_memory_set(&parts) {
+            Ok(settype) => settype,
+            Err(err) => return Err(err),
+        },
         _ => return Err("Invalid argument for 'set'."),
-
     };
     Ok(Command::Set(settype))
 }

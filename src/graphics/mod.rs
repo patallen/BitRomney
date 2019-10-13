@@ -2,14 +2,14 @@ pub mod display;
 use std::fmt;
 
 pub struct Control {
-    pub lcd_enable: bool, // Can only be done during V-Blank
-    pub tilemap_select: bool, // false=9800-9BFF, true=9C00-9FFF
-    pub display_enable: bool, // false=off, true=on
-    pub bg_data_select: bool, // false=8800-97FF, true=8000-8FFF
+    pub lcd_enable: bool,        // Can only be done during V-Blank
+    pub tilemap_select: bool,    // false=9800-9BFF, true=9C00-9FFF
+    pub display_enable: bool,    // false=off, true=on
+    pub bg_data_select: bool,    // false=8800-97FF, true=8000-8FFF
     pub bg_tilemap_select: bool, // false=9800-9BFF, true=9C00-9FFF
-    pub obj_size: bool, // false=8x8, true=8x16
-    pub obj_enable: bool, // false=off, true=on
-    pub bg_display: bool, // false=off, true=on -- When cleared, background is blank
+    pub obj_size: bool,          // false=8x8, true=8x16
+    pub obj_enable: bool,        // false=off, true=on
+    pub bg_display: bool,        // false=off, true=on -- When cleared, background is blank
 }
 
 impl Control {
@@ -26,10 +26,14 @@ impl Control {
         }
     }
     pub fn read_u8(&self) -> u8 {
-        (self.lcd_enable as u8) << 7 | (self.tilemap_select as u8) << 6 |
-            (self.display_enable as u8) << 5 | (self.bg_data_select as u8) << 4 |
-            (self.bg_tilemap_select as u8) << 3 | (self.obj_size as u8) << 2 |
-            (self.obj_enable as u8) << 1 | (self.bg_display as u8)
+        (self.lcd_enable as u8) << 7
+            | (self.tilemap_select as u8) << 6
+            | (self.display_enable as u8) << 5
+            | (self.bg_data_select as u8) << 4
+            | (self.bg_tilemap_select as u8) << 3
+            | (self.obj_size as u8) << 2
+            | (self.obj_enable as u8) << 1
+            | (self.bg_display as u8)
     }
     pub fn write_u8(&mut self, byte: u8) {
         self.lcd_enable = (byte >> 7 & 0b1) == 1;
@@ -66,7 +70,8 @@ impl fmt::Debug for Tile {
         let lines = &self.lines;
         let mut rv: Vec<String> = Vec::new();
         for line in lines.into_iter() {
-            let l = line.into_iter()
+            let l = line
+                .into_iter()
                 .map(|x| match *x {
                     0 => "_".to_string(),
                     _ => format!("{}", x),
@@ -80,9 +85,9 @@ impl fmt::Debug for Tile {
 }
 
 pub enum StatMode {
-    Hblank, // LCD Controller is in H-Blank period
-    Vblank, // LCD Controller is in V-blank period
-    Search, // LCD Controller is reading from OAM/RAM
+    Hblank,   // LCD Controller is in H-Blank period
+    Vblank,   // LCD Controller is in V-blank period
+    Search,   // LCD Controller is reading from OAM/RAM
     Transfer, // LCD Controller is reading from OAM & RAM - CPU cannot access OAM
 }
 
@@ -107,29 +112,32 @@ impl StatMode {
 }
 
 pub struct Stat {
-    pub lyc_int_enable: bool, // false=disable, true=enable
-    pub oam_int_enable: bool, // false=disable, true=enable
+    pub lyc_int_enable: bool,    // false=disable, true=enable
+    pub oam_int_enable: bool,    // false=disable, true=enable
     pub vblank_int_enable: bool, // false=disable, true=enable
     pub hblank_int_enable: bool, // false=disable, true=enable
-    pub coincidence_flag: bool, // false=lyc!=ly, true=lyc==ly
+    pub coincidence_flag: bool,  // false=lyc!=ly, true=lyc==ly
     pub mode: StatMode,
 }
 
 impl Stat {
     pub fn new() -> Self {
         Stat {
-            lyc_int_enable: false, // false=disable, true=enable
-            oam_int_enable: false, // false=disable, true=enable
+            lyc_int_enable: false,    // false=disable, true=enable
+            oam_int_enable: false,    // false=disable, true=enable
             vblank_int_enable: false, // false=disable, true=enable
             hblank_int_enable: false, // false=disable, true=enable
-            coincidence_flag: false, // false=lyc!=ly, true=lyc==ly
+            coincidence_flag: false,  // false=lyc!=ly, true=lyc==ly
             mode: StatMode::Hblank,
         }
     }
     pub fn read_u8(&self) -> u8 {
-        (self.lyc_int_enable as u8) << 6 | (self.oam_int_enable as u8) << 5 |
-            (self.vblank_int_enable as u8) << 4 | (self.hblank_int_enable as u8) << 3 |
-            (self.coincidence_flag as u8) << 2 | self.mode.to_u8()
+        (self.lyc_int_enable as u8) << 6
+            | (self.oam_int_enable as u8) << 5
+            | (self.vblank_int_enable as u8) << 4
+            | (self.hblank_int_enable as u8) << 3
+            | (self.coincidence_flag as u8) << 2
+            | self.mode.to_u8()
     }
     pub fn write_u8(&mut self, byte: u8) {
         self.lyc_int_enable = (byte >> 6 & 0b1) == 1; // false=disable, true=enable

@@ -1,8 +1,6 @@
-use graphics::{Control, Palette, Stat, Tile, Shade};
+use graphics::{Control, Palette, Shade, Stat, Tile};
 
-
-const FRAMEBUFFER_SIZE: usize = 92160;
-
+const FRAMEBUFFER_SIZE: usize = 160 * 144;
 
 pub struct Ppu {
     framebuffer: [u8; FRAMEBUFFER_SIZE],
@@ -10,9 +8,9 @@ pub struct Ppu {
     vram: Box<[u8]>,
     oam: Box<[u8]>,
     control: Control, // FF40
-    pub stat: Stat, // FF41
-    scroll_y: usize, // FF42
-    scroll_x: usize, // FF43
+    pub stat: Stat,   // FF41
+    scroll_y: usize,  // FF42
+    scroll_x: usize,  // FF43
 
     // Vertical line to which we are transferring data
     ly: usize, // FF44
@@ -26,11 +24,11 @@ pub struct Ppu {
     // transfer source address divided by 0x100.
     dma_address: usize, // FF46
 
-    bg_palette: Palette, // FF47
+    bg_palette: Palette,   // FF47
     obj0_palette: Palette, // FF48
     obj1_palette: Palette, // FF49
-    window_y: u8, // FF4A
-    window_x: u8, // FF4B
+    window_y: u8,          // FF4A
+    window_x: u8,          // FF4B
 }
 
 impl Ppu {
@@ -63,6 +61,7 @@ impl Ppu {
         let slice = &self.vram[idx..idx + 16];
         Tile::new(slice)
     }
+
     pub fn read_u8(&self, loc: usize) -> u8 {
         let result = match loc {
             0x8000..=0x9FFF => self.vram[loc - 0x8000],
@@ -111,9 +110,11 @@ impl Ppu {
         };
         &self.vram[base..base + 20]
     }
+
     fn update_framebuffer(&mut self) {
         let nth_tile = ((self.scroll_y as usize + self.ly) / 8) * 32 + (self.scroll_x / 8);
-        let tiles: Vec<Tile> = self.tile_line(nth_tile)
+        let tiles: Vec<Tile> = self
+            .tile_line(nth_tile)
             .into_iter()
             .map(|x| self.get_tile(*x as usize))
             .collect();
@@ -125,10 +126,15 @@ impl Ppu {
         });
         let shades: Vec<Shade> = lines.into_iter().map(|x| Shade::from_u8(x)).collect();
 
-        let offset = (self.ly as usize * 20 * 8 * 4) as usize;
+        let offset = (self.ly as usize * 20 * 8) as usize;
         for (i, shade) in shades.into_iter().enumerate() {
-            let b = offset + i * 4;
-            self.framebuffer[b..b + 4].copy_from_slice(&shade.to_rgba());
+            let b = offset + i;
+            self.framebuffer[b] = match shade {
+                Shade::White => 3,
+                Shade::DarkGray => 2,
+                Shade::LightGray => 1,
+                Shade::Black => 0,
+            };
         }
     }
 
@@ -152,7 +158,8 @@ impl Ppu {
             _ => panic!("LY out of range."),
         }
     }
-    pub fn set_on_refresh(&mut self, callback: Box<dyn FnMut([u8; 23_040 * 4])>) {
+
+    pub fn set_on_refresh(&mut self, callback: Box<dyn FnMut([u8; FRAMEBUFFER_SIZE])>) {
         self.on_refresh = Some(callback);
     }
 }

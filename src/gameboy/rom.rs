@@ -1,8 +1,7 @@
-use std::io::Read;
-use std::fs::File;
 use std::fmt;
+use std::fs::File;
+use std::io::Read;
 use std::str;
-
 
 pub struct Rom {
     data: Vec<u8>,

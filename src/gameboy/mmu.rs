@@ -106,7 +106,6 @@ impl Mmu {
         (second << 8) | first
     }
     pub fn write_u16(&mut self, address: usize, value: u16) {
-
         let first = (value & 0xFF) as u8;
         let second = (value >> 8) as u8;
         self.write(address, first);
@@ -118,43 +117,43 @@ impl Mmu {
     }
 }
 
-    //    fn map_location(&self, address: usize) -> MemoryMap {
-    //            0x0000...0x7FFF => MemoryRange::Rom,
-    //            0x8000...0x9FFF => MemoryRange::Ppu,
-    //            0xA000...0xBFFF => MemoryRange::Sram,
-    //            0xC000...0xDFFF => MemoryRange::Wram,
-    //            0xE000...0xFDFF => MemoryRange::Echo,
-    //            0xFE00...0xFE9F => MemoryRange::Ppu,
-    //            0xFF50          => MemoryRange::
-    //            0xFF00...0xFF3F => MemoryRange::
-    //            0xFF40...0xFF4B => MemoryRange::
-    //            0xFF80...0xFFFE => MemoryRange::HighRam,
-    //            0xFFFF          => MemoryRange::InterruptEnableFlags
-    //
-    //            0x0000...0x7FFF => self.rom.write(address, byte),
-    //            0x8000...0x9FFF => self.ppu.write_u8(address, byte),
-    //            0xA000...0xBFFF => self.sram[address - 0xA000] = byte,
-    //            0xC000...0xDFFF => self.wram[address - 0xD000] = byte,
-    //            0xE000...0xFDFF => self.echo[address - 0xE000] = byte,
-    //            0xFE00...0xFE9F => self.ppu.write_u8(address, byte),
-    //            0xFF50          => self.in_bios = (byte & 1) == 0,
-    //            0xFF00...0xFF3F => self.io[address-0xFF00] = byte,
-    //            0xFF40...0xFF4B => self.ppu.write_u8(address, byte),
-    //            0xFF80...0xFFFE => self.hram[address - 0xFF80] = byte,
-    //            0xFFFF 			    => self.ie = byte,
-    //            _				        => {}
-    //
-    //    }
-    //    enum MemoryRange {
-    //        ReadInterupts
-    //        Bios,
-    //        Rom,
-    //        Vram,
-    //        Sram,
-    //        WorkingRam,
-    //        Echo,
-    //        InputOutpu,
-    //        HighRam,
-    //        InterruptEnableFlags
-    //    }
-    //
+//    fn map_location(&self, address: usize) -> MemoryMap {
+//            0x0000...0x7FFF => MemoryRange::Rom,
+//            0x8000...0x9FFF => MemoryRange::Ppu,
+//            0xA000...0xBFFF => MemoryRange::Sram,
+//            0xC000...0xDFFF => MemoryRange::Wram,
+//            0xE000...0xFDFF => MemoryRange::Echo,
+//            0xFE00...0xFE9F => MemoryRange::Ppu,
+//            0xFF50          => MemoryRange::
+//            0xFF00...0xFF3F => MemoryRange::
+//            0xFF40...0xFF4B => MemoryRange::
+//            0xFF80...0xFFFE => MemoryRange::HighRam,
+//            0xFFFF          => MemoryRange::InterruptEnableFlags
+//
+//            0x0000...0x7FFF => self.rom.write(address, byte),
+//            0x8000...0x9FFF => self.ppu.write_u8(address, byte),
+//            0xA000...0xBFFF => self.sram[address - 0xA000] = byte,
+//            0xC000...0xDFFF => self.wram[address - 0xD000] = byte,
+//            0xE000...0xFDFF => self.echo[address - 0xE000] = byte,
+//            0xFE00...0xFE9F => self.ppu.write_u8(address, byte),
+//            0xFF50          => self.in_bios = (byte & 1) == 0,
+//            0xFF00...0xFF3F => self.io[address-0xFF00] = byte,
+//            0xFF40...0xFF4B => self.ppu.write_u8(address, byte),
+//            0xFF80...0xFFFE => self.hram[address - 0xFF80] = byte,
+//            0xFFFF 			    => self.ie = byte,
+//            _				        => {}
+//
+//    }
+//    enum MemoryRange {
+//        ReadInterupts
+//        Bios,
+//        Rom,
+//        Vram,
+//        Sram,
+//        WorkingRam,
+//        Echo,
+//        InputOutpu,
+//        HighRam,
+//        InterruptEnableFlags
+//    }
+//

@@ -1,67 +1,50 @@
-use sdl2::render::Canvas;
-use sdl2::pixels::PixelFormatEnum;
-use sdl2::video::Window;
-use sdl2::rect::Rect;
-
 const DISPLAY_WIDTH_PIXELS: u32 = 160;
 const DISPLAY_HEIGHT_PIXELS: u32 = 144;
 const SCALE: u32 = 5;
 const TITLE: &'static str = "BitRomney GB";
-// const BACKGROUND: (u8, u8, u8) = (155, 188, 15);
 
+pub struct Dims {
+    pub width: usize,
+    pub height: usize,
+}
+
+impl Default for Dims {
+    fn default() -> Dims {
+        Self {
+            width: 160,
+            height: 144,
+        }
+    }
+}
 
 pub struct Display {
-    canvas: Canvas<Window>,
-    width: u32,
-    height: u32,
-    scale: u32,
+    window: minifb::Window,
+    dims: Dims,
+    scale: u8,
 }
 
 impl Display {
-    pub fn new(context: ::sdl2::Sdl) -> Display {
-        let window = context
-            .video()
-            .unwrap()
-            .window(
-                TITLE,
-                DISPLAY_WIDTH_PIXELS * SCALE,
-                DISPLAY_HEIGHT_PIXELS * SCALE,
-            )
-            .position_centered()
-            .opengl()
-            .build()
-            .unwrap();
-        let canvas = window.into_canvas().build().unwrap();
+    pub fn new() -> Display {
+        let dims = Dims::default();
+        let window = minifb::Window::new(
+            "GameBoy",
+            dims.width,
+            dims.height,
+            minifb::WindowOptions {
+                scale: minifb::Scale::X2,
+                ..minifb::WindowOptions::default()
+            },
+        )
+        .expect("Failed to create window.");
 
         Display {
-            canvas: canvas,
-            width: DISPLAY_WIDTH_PIXELS,
-            height: DISPLAY_HEIGHT_PIXELS,
-            scale: SCALE,
+            window,
+            dims,
+            scale: 2,
         }
     }
 
-    pub fn draw_frame(&mut self, data: [u8; 23_040 * 4]) {
-        let texture_creator = self.canvas.texture_creator();
-        let mut texture = texture_creator
-            .create_texture_streaming(PixelFormatEnum::ARGB8888, self.width, self.height)
-            .unwrap();
-
-        texture
-            .update(Rect::new(0, 0, self.width, self.height), &data, 1)
-            .unwrap();
-        self.canvas
-            .copy(
-                &texture,
-                None,
-                Some(Rect::new(
-                    0,
-                    0,
-                    self.width * self.scale,
-                    self.height * self.scale,
-                )),
-            )
-            .unwrap();
-        self.canvas.present()
+    pub fn draw_frame(&mut self, data: &[u32]) {
+        self.window.update_with_buffer(&data);
     }
 }

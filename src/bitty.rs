@@ -52,7 +52,6 @@ impl BigEndian for u16 {
     }
 }
 
-
 pub trait BitFlags {
     fn get_bit(&self, bitno: usize) -> u8;
     fn set_bit(&mut self, bitno: usize, bit: u8) -> ();

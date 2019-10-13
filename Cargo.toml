@@ -1,9 +1,8 @@
 [package]
+authors = ["Patrick Allen <prallen90@gmail.com>"]
 name = "gameroy"
 version = "0.1.0"
-authors = ["Patrick Allen <prallen90@gmail.com>"]
 
 [dependencies]
-sdl2 = "0.31.0"
-log4rs = "0.7.0"
-log = "0.3.8"
+log = "0.4.8"
+minifb = "0.13.0"

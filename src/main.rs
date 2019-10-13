@@ -1,54 +1,36 @@
-extern crate sdl2;
-
-mod bitty;
-mod gameboy;
-mod graphics;
-mod debugger;
-
-
-use debugger::Debugger;
-use gameboy::Gameboy;
-use gameboy::rom::Rom;
-
 #[macro_use]
 extern crate log;
-extern crate log4rs;
 
-use log::LogLevelFilter;
-use log4rs::append::file::FileAppender;
-use log4rs::encode::pattern::PatternEncoder;
-use log4rs::config::{Appender, Config, Root};
+mod bitty;
+mod debugger;
+mod gameboy;
+mod graphics;
+
+use debugger::Debugger;
+use gameboy::rom::Rom;
+use gameboy::Gameboy;
+
 use graphics::display::Display;
 use std::env;
 
 fn main() {
-    let logfile = FileAppender::builder()
-        .encoder(Box::new(PatternEncoder::new("{l} - {m}\n")))
-        .build("log/output.log")
-        .unwrap();
-
-    let config = Config::builder()
-        .appender(Appender::builder().build("logfile", Box::new(logfile)))
-        .build(Root::builder().appender("logfile").build(
-            LogLevelFilter::Info,
-        ))
-        .unwrap();
-
-    log4rs::init_config(config).unwrap();
-
-    let context = ::sdl2::init().unwrap();
-
     let filename = env::args().nth(1).unwrap();
     let filepath = format!("./{}", filename);
     let rom = Rom::new(&*filepath);
     let mut gameboy = Gameboy::new(rom);
 
-    let event_pump = context.event_pump();
-    let mut display = Display::new(context);
-    gameboy.mmu.ppu.set_on_refresh(Box::new(
-        move |arr| { display.draw_frame(arr); },
-    ));
+    let mut display = Display::new();
+    gameboy.mmu.ppu.set_on_refresh(Box::new(move |arr| {
+        let data = arr
+            .iter()
+            .map(|d| {
+                let d = *d as u32 * 64;
+                (((d << 8) | d) << 8) | d
+            })
+            .collect::<Vec<u32>>();
+        display.draw_frame(&data);
+    }));
 
-    let mut debugger = Debugger::new(gameboy, event_pump.unwrap());
+    let mut debugger = Debugger::new(gameboy);
     debugger.run();
 }

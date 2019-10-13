@@ -1,19 +1,14 @@
 mod command;
 pub mod dis;
 
-use sdl2;
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
+use std::io::{stdin, stdout, Write};
 use std::process;
-use std::io::{stdout, stdin, Write};
 
-use gameboy::Gameboy;
+use self::command::{build_set, build_show, build_step, Command, SetType, ShowType};
 use gameboy::operations::get_operation;
-use self::command::{Command, build_step, build_show, build_set, ShowType, SetType};
-
+use gameboy::Gameboy;
 
 const MEM_DISPLAY_WIDTH: u16 = 16;
-
 
 enum DebugMode {
     Quitting,
@@ -29,38 +24,38 @@ pub struct Debugger {
     mode: DebugMode,
     gameboy: Gameboy,
     step_distance: u32,
-    events: sdl2::EventPump,
 }
 
 impl Debugger {
-    pub fn new(gameboy: Gameboy, event_pump: sdl2::EventPump) -> Debugger {
+    pub fn new(gameboy: Gameboy) -> Debugger {
         Debugger {
             // tracepoints: Vec::new(),
             breakpoints: Vec::new(),
             gameboy: gameboy,
             mode: DebugMode::Repl,
             step_distance: 10,
-            events: event_pump,
         }
     }
+
     fn cycle(&mut self) {
         self.handle_events();
         self.gameboy.step();
-        self.log();
+        // self.log();
         self.check_breakpoints();
     }
 
     fn handle_events(&mut self) {
-        for event in self.events.poll_iter() {
-            match event {
-                Event::Quit { .. } |
-                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
-                    self.mode = DebugMode::Repl
-                }
-                _ => {}
-            }
-        }
+        // for event in self.gameboy.display.events() {
+        //     match event {
+        //         Event::Quit { .. } |
+        //         Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
+        //             self.mode = DebugMode::Repl
+        //         }
+        //         _ => {}
+        //     }
+        // }
     }
+
     fn log(&mut self) {
         let first = self.gameboy.mmu.read(self.gameboy.cpu.regs.pc) as u16;
         let code = match self.gameboy.mmu.read(self.gameboy.cpu.regs.pc) {
@@ -214,7 +209,8 @@ impl Debugger {
 
         let mut lines: Vec<String> = Vec::new();
         for (i, ch) in mems.as_slice().chunks(mem_width).enumerate() {
-            let string = ch.into_iter()
+            let string = ch
+                .into_iter()
                 .map(|x| format!("{:02X}", x))
                 .collect::<Vec<_>>()
                 .join(" ");
@@ -231,7 +227,6 @@ impl Debugger {
         println!("{}", lines.join("\n"));
     }
 }
-
 
 fn parse_input(text: &str) -> Result<Command, &str> {
     let parts: Vec<&str> = text.split(" ").collect();

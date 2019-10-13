@@ -1,13 +1,11 @@
 use gameboy::mmu::Mmu;
-use gameboy::registers::Registers;
 use gameboy::operations::{get_operation, Operation};
-
+use gameboy::registers::Registers;
 
 pub struct Cpu {
     pub regs: Registers,
     pub counter: u8, // Will count down until next instruction
 }
-
 
 impl Cpu {
     pub fn new(registers: Registers) -> Cpu {

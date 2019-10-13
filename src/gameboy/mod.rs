@@ -1,17 +1,17 @@
-pub mod rom;
 mod cpu;
 mod mmu;
-mod ppu;
 pub mod operations;
+mod ppu;
 mod registers;
+pub mod rom;
 
 use std::thread::sleep;
 use std::time::Duration;
 
-use self::rom::Rom;
 use self::cpu::Cpu;
-use self::registers::Registers;
 use self::mmu::Mmu;
+use self::registers::Registers;
+use self::rom::Rom;
 
 pub struct Gameboy {
     pub mmu: Mmu,

@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 
-use std::fmt;
 use gameboy::rom::Rom;
 use std::collections::BTreeMap;
+use std::fmt;
 
 pub struct Disassembler {
     rom: Rom,
@@ -32,7 +32,9 @@ impl Disassembler {
             // let vals = values.reverse();
             instructions.insert(orig_pc as u16, Inst::new(code, orig_pc, dis, values));
         }
-        Disassembly { instructions: instructions }
+        Disassembly {
+            instructions: instructions,
+        }
     }
     fn next_code(&mut self) -> u16 {
         match self.read_byte() {
@@ -85,35 +87,25 @@ impl fmt::Debug for Inst {
         };
         let dis = &self.dis;
         let dissed = match value {
-            Some(v) => {
-                dis.replace("{r}", &format!("{}", &v))
-                    .replace("{$2}", &format!("${:02x}", &v))
-                    .replace("{$4}", &format!("${:04x}", &v))
-                    .replace("{$2h}", &format!("$ff00 + {:02x}", &v))
-            }
+            Some(v) => dis
+                .replace("{r}", &format!("{}", &v))
+                .replace("{$2}", &format!("${:02x}", &v))
+                .replace("{$4}", &format!("${:04x}", &v))
+                .replace("{$2h}", &format!("$ff00 + {:02x}", &v)),
             None => dis.to_string(),
         };
         match self.values.len() {
             0 => write!(f, "{:04X} |           {}", self.loc, dissed),
-            1 => {
-                write!(
-                    f,
-                    "{:04X} | {:02X}        {}",
-                    self.loc,
-                    self.values[0],
-                    dissed
-                )
-            }
-            2 => {
-                write!(
-                    f,
-                    "{:04X} | {:02X} {:02X}     {}",
-                    self.loc,
-                    self.values[0],
-                    self.values[1],
-                    dissed
-                )
-            }
+            1 => write!(
+                f,
+                "{:04X} | {:02X}        {}",
+                self.loc, self.values[0], dissed
+            ),
+            2 => write!(
+                f,
+                "{:04X} | {:02X} {:02X}     {}",
+                self.loc, self.values[0], self.values[1], dissed
+            ),
             _ => panic!("Can't have more than 2 values."),
         }
     }
@@ -410,7 +402,6 @@ pub fn disassemble_code(code: u16) -> Option<(String, u8)> {
         _ => return None,
     }
 }
-
 
 #[test]
 fn test_op_disassemble() {
