@@ -8,6 +8,7 @@ pub struct Disassembler {
     rom: Rom,
     pc: usize,
 }
+
 impl Disassembler {
     pub fn new(rom: Rom) -> Self {
         Disassembler { rom: rom, pc: 0 }
@@ -79,7 +80,7 @@ impl fmt::Debug for Inst {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let value = match self.values.len() {
             2 => Some((self.values[0] as u16) << 8 | self.values[1] as u16),
-            1 => Some((self.values[0] as u16)),
+            1 => Some(self.values[0] as u16),
             _ => None,
         };
         let dis = &self.dis;
@@ -121,22 +122,24 @@ impl fmt::Debug for Inst {
 pub fn disassemble_code(code: u16) -> Option<(String, u8)> {
     let big = (code & 0xFF00) >> 8;
     let lil = code & 0x00FF;
+
     match big {
         0xCB => {
             let instr = match lil {
-                0x00...0x07 => "RLC",
-                0x08...0x0F => "RRC",
-                0x10...0x17 => "RL",
-                0x18...0x1F => "RR",
-                0x20...0x27 => "SLA",
-                0x28...0x2F => "SRA",
-                0x30...0x37 => "SWAP",
-                0x38...0x3F => "SRL",
-                0x40...0x7F => "BIT",
-                0x80...0xBF => "RES",
-                0xC0...0xFF => "SET",
+                0x00..=0x07 => "RLC",
+                0x08..=0x0F => "RRC",
+                0x10..=0x17 => "RL",
+                0x18..=0x1F => "RR",
+                0x20..=0x27 => "SLA",
+                0x28..=0x2F => "SRA",
+                0x30..=0x37 => "SWAP",
+                0x38..=0x3F => "SRL",
+                0x40..=0x7F => "BIT",
+                0x80..=0xBF => "RES",
+                0xC0..=0xFF => "SET",
                 _ => panic!("Not a valid CB code."),
             };
+
             let operand = match lil & 0x0F {
                 0x00 | 0x08 => "B",
                 0x01 | 0x09 => "C",
@@ -148,6 +151,7 @@ pub fn disassemble_code(code: u16) -> Option<(String, u8)> {
                 0x07 | 0x0F => "A",
                 _ => panic!("Not a valid CB code."),
             };
+
             let operator = match instr {
                 "RES" | "BIT" | "SET" => format!("{} {}", instr, (lil % 0x40) / 8),
                 _ => instr.to_string(),

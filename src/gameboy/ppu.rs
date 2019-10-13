@@ -6,7 +6,7 @@ const FRAMEBUFFER_SIZE: usize = 92160;
 
 pub struct Ppu {
     framebuffer: [u8; FRAMEBUFFER_SIZE],
-    on_refresh: Option<Box<FnMut([u8; FRAMEBUFFER_SIZE])>>,
+    on_refresh: Option<Box<dyn FnMut([u8; FRAMEBUFFER_SIZE])>>,
     vram: Box<[u8]>,
     oam: Box<[u8]>,
     control: Control, // FF40
@@ -65,8 +65,8 @@ impl Ppu {
     }
     pub fn read_u8(&self, loc: usize) -> u8 {
         let result = match loc {
-            0x8000...0x9FFF => self.vram[loc - 0x8000],
-            0xFE00...0xFE9F => self.oam[loc - 0xFE00],
+            0x8000..=0x9FFF => self.vram[loc - 0x8000],
+            0xFE00..=0xFE9F => self.oam[loc - 0xFE00],
             0xFF40 => self.control.read_u8(),
             0xFF41 => self.stat.read_u8(),
             0xFF42 => self.scroll_y as u8,
@@ -86,8 +86,8 @@ impl Ppu {
     }
     pub fn write_u8(&mut self, loc: usize, value: u8) {
         match loc {
-            0x8000...0x9FFF => self.vram[loc - 0x8000] = value,
-            0xFE00...0xFE9F => self.oam[loc - 0xFE00] = value,
+            0x8000..=0x9FFF => self.vram[loc - 0x8000] = value,
+            0xFE00..=0xFE9F => self.oam[loc - 0xFE00] = value,
             0xFF40 => self.control.write_u8(value),
             0xFF41 => self.stat.write_u8(value),
             0xFF42 => self.scroll_y = value as usize,
@@ -131,9 +131,10 @@ impl Ppu {
             self.framebuffer[b..b + 4].copy_from_slice(&shade.to_rgba());
         }
     }
+
     pub fn step(&mut self) {
         match self.ly {
-            0...143 => {
+            0..=143 => {
                 self.stat.vblank_int_enable = false;
                 if self.ly == 0 {
                     if let Some(ref mut cb) = self.on_refresh {
@@ -143,7 +144,7 @@ impl Ppu {
                 self.update_framebuffer();
                 self.ly += 1;
             }
-            144...153 => {
+            144..=153 => {
                 self.stat.vblank_int_enable = true;
                 self.ly += 1;
             }
@@ -151,7 +152,7 @@ impl Ppu {
             _ => panic!("LY out of range."),
         }
     }
-    pub fn set_on_refresh(&mut self, callback: Box<FnMut([u8; 23_040 * 4])>) {
+    pub fn set_on_refresh(&mut self, callback: Box<dyn FnMut([u8; 23_040 * 4])>) {
         self.on_refresh = Some(callback);
     }
 }

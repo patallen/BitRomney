@@ -8,7 +8,7 @@ use bitty::BitFlags;
 
 pub struct Operation {
     pub dis: &'static str,
-    pub func: Box<Fn(&mut Cpu, &mut Mmu)>,
+    pub func: Box<dyn Fn(&mut Cpu, &mut Mmu)>,
     pub cycles: u8,
     pub mode: ValueMode,
 }

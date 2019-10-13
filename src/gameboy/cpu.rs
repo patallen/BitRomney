@@ -16,26 +16,29 @@ impl Cpu {
             counter: 0,
         }
     }
+
     pub fn cycle(&mut self, mmu: &mut Mmu) {
         let operation = self.get_operation(mmu);
         (operation.func)(self, mmu);
         mmu.step();
         self.handle_interrupts(mmu);
     }
+
     fn handle_interrupts(&mut self, mmu: &mut Mmu) {
         let interrupts = mmu.read(0xFF0F);
         if interrupts != 0 && mmu.ime {
             let ie = mmu.read(0xFFFF);
             let vblank_enabled = ie & 0b1 == 1;
             if vblank_enabled {
+                debug!("VBlank Enabled");
                 let pc = self.regs.pc;
                 self.stack_push_u16(pc as u16, mmu);
                 self.regs.pc = 0x0040;
                 mmu.ime = false;
             }
         }
-
     }
+
     pub fn get_operation(&mut self, mmu: &mut Mmu) -> Operation {
         let first = self.immediate_u8_pc(mmu) as u16;
         let code = match first {
@@ -44,20 +47,24 @@ impl Cpu {
         };
         get_operation(code)
     }
+
     pub fn immediate_u16(&self, mmu: &Mmu) -> u16 {
         let pc = self.regs.pc;
         let mut ret: u16 = (mmu.read(pc + 2) as u16) << 8;
         ret |= mmu.read(pc + 1) as u16;
         ret
     }
+
     pub fn immediate_u8(&self, mmu: &Mmu) -> u8 {
         mmu.read(self.regs.pc + 1)
     }
+
     pub fn immediate_u8_pc(&mut self, mmu: &Mmu) -> u8 {
         let res = mmu.read(self.regs.pc);
         self.regs.pc += 1;
         res
     }
+
     pub fn immediate_u16_pc(&mut self, mmu: &Mmu) -> u16 {
         let pc = self.regs.pc;
         let mut res: u16 = (mmu.read(pc + 1) as u16) << 8;
@@ -65,6 +72,7 @@ impl Cpu {
         self.regs.pc += 2;
         res
     }
+
     //     pub fn stack_pop_u8(&mut self, mmu: &mut Mmu) -> u8 {
     //         self.regs.sp += 1;
     //         let sp = self.regs.sp as usize;
@@ -75,6 +83,7 @@ impl Cpu {
     //         mmu.write(sp, val);
     //         self.regs.sp -= 1;
     //     }
+
     pub fn stack_pop_u16(&mut self, mmu: &mut Mmu) -> u16 {
         self.regs.sp += 1;
         let sp = self.regs.sp as usize;
@@ -82,6 +91,7 @@ impl Cpu {
         self.regs.sp += 1;
         ret
     }
+
     pub fn stack_push_u16(&mut self, val: u16, mmu: &mut Mmu) {
         self.regs.sp -= 1;
         let sp = self.regs.sp as usize;
