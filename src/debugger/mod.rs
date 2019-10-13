@@ -5,8 +5,8 @@ use std::io::{stdin, stdout, Write};
 use std::process;
 
 use self::command::{build_set, build_show, build_step, Command, SetType, ShowType};
-use gameboy::operations::get_operation;
-use gameboy::Gameboy;
+use crate::gameboy::operations::get_operation;
+use crate::gameboy::Gameboy;
 
 const MEM_DISPLAY_WIDTH: u16 = 16;
 
@@ -56,6 +56,7 @@ impl Debugger {
         // }
     }
 
+    #[allow(dead_code)]
     fn log(&mut self) {
         let first = self.gameboy.mmu.read(self.gameboy.cpu.regs.pc) as u16;
         let code = match self.gameboy.mmu.read(self.gameboy.cpu.regs.pc) {
@@ -104,6 +105,7 @@ impl Debugger {
             };
         }
     }
+
     fn repl(&mut self) {
         loop {
             print!("gbdb> ");
@@ -118,6 +120,7 @@ impl Debugger {
             };
         }
     }
+
     fn handle_command(&mut self, command: Command) {
         match command {
             Command::Step(dist) => {
@@ -132,16 +135,19 @@ impl Debugger {
             Command::Help => self.print_help(),
         }
     }
+
     fn set(&mut self, settype: SetType) {
         match settype {
             SetType::Breakpoint(val) => self.breakpoints.push(val),
             SetType::Memory(loc, val) => self.set_memory(loc, val),
         }
     }
+
     fn set_memory(&mut self, loc: usize, val: u8) {
         println!("Location: {:04x}, Val: {:02X}", loc, val);
         self.gameboy.mmu.write(loc, val);
     }
+
     fn show(&self, showtype: ShowType) {
         match showtype {
             ShowType::Registers => self.print_registers(),
@@ -149,6 +155,7 @@ impl Debugger {
             ShowType::Memory(low, hi) => self.print_memory(low, hi),
         }
     }
+
     fn print_help(&self) {
         let help_string = "\
         Step\t(step n) - Run n commands without interruption\n\
@@ -199,7 +206,9 @@ impl Debugger {
         println!("----------Flags----------");
         println!("{:?}", self.gameboy.cpu.regs.flags);
     }
+
     fn print_tracepoints(&self) {}
+
     fn print_memory(&self, low: u16, hi: u16) {
         let mem_width = MEM_DISPLAY_WIDTH as usize;
         let l = low as usize / mem_width * mem_width;

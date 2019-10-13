@@ -1,4 +1,4 @@
-use bitty::BitFlags;
+use crate::bitty::BitFlags;
 use std::fmt;
 
 pub struct FlagRegister {

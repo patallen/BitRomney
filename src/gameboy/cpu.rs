@@ -1,6 +1,6 @@
-use gameboy::mmu::Mmu;
-use gameboy::operations::{get_operation, Operation};
-use gameboy::registers::Registers;
+use crate::gameboy::mmu::Mmu;
+use crate::gameboy::operations::{get_operation, Operation};
+use crate::gameboy::registers::Registers;
 
 pub struct Cpu {
     pub regs: Registers,

@@ -1,10 +1,10 @@
 #![allow(unused_variables)]
 #![allow(non_snake_case)]
-use gameboy::cpu::Cpu;
-use gameboy::mmu::Mmu;
-use gameboy::registers::FlagRegister;
+use crate::gameboy::cpu::Cpu;
+use crate::gameboy::mmu::Mmu;
+use crate::gameboy::registers::FlagRegister;
 
-use bitty::BitFlags;
+use crate::bitty::BitFlags;
 
 pub struct Operation {
     pub dis: &'static str,

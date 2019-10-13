@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use gameboy::rom::Rom;
+use crate::gameboy::rom::Rom;
 use std::collections::BTreeMap;
 use std::fmt;
 

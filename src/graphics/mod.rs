@@ -160,10 +160,10 @@ pub enum Shade {
 impl Shade {
     pub fn from_u8(byte: u8) -> Shade {
         match byte {
-            0 => Shade::White,
-            1 => Shade::LightGray,
-            2 => Shade::DarkGray,
-            3 => Shade::Black,
+            3 => Shade::White,
+            2 => Shade::LightGray,
+            1 => Shade::DarkGray,
+            0 => Shade::Black,
             _ => panic!("{} is an invalid Shade value.", byte),
         }
     }
@@ -172,11 +172,11 @@ impl Shade {
 impl From<u8> for Shade {
     fn from(value: u8) -> Shade {
         match value {
-            0 => Shade::White,
-            1 => Shade::LightGray,
-            2 => Shade::DarkGray,
-            3 => Shade::Black,
-            _ => panic!("{} is not a valid integer value for Shade", value)
+            3 => Shade::White,
+            2 => Shade::LightGray,
+            1 => Shade::DarkGray,
+            0 => Shade::Black,
+            _ => panic!("{} is not a valid integer value for Shade", value),
         }
     }
 }
@@ -192,6 +192,13 @@ impl Into<u8> for Shade {
     }
 }
 
+impl Into<u32> for Shade {
+    fn into(self) -> u32 {
+        let int: u8 = self.into();
+        let int = int as u32;
+        (((int << 8) | int) << 8) | int
+    }
+}
 
 pub struct Palette {
     color_3: Shade,

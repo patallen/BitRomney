@@ -1,15 +1,15 @@
 pub trait LittleEndian {
     fn get_msb(&self) -> u8;
     fn get_lsb(&self) -> u8;
-    fn set_msb(&mut self, u8) -> ();
-    fn set_lsb(&mut self, u8) -> ();
+    fn set_msb(&mut self, value: u8) -> ();
+    fn set_lsb(&mut self, value: u8) -> ();
 }
 
 pub trait BigEndian {
     fn get_msb(&self) -> u8;
     fn get_lsb(&self) -> u8;
-    fn set_msb(&mut self, u8) -> ();
-    fn set_lsb(&mut self, u8) -> ();
+    fn set_msb(&mut self, value: u8) -> ();
+    fn set_lsb(&mut self, value: u8) -> ();
 }
 
 impl LittleEndian for u16 {

@@ -1,4 +1,4 @@
-use graphics::{Control, Palette, Shade, Stat, Tile};
+use crate::graphics::{Control, Palette, Shade, Stat, Tile};
 
 const FRAMEBUFFER_SIZE: usize = 160 * 144;
 
