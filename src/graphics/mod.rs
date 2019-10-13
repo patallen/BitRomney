@@ -149,7 +149,7 @@ impl Stat {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Shade {
     White,
     LightGray,
@@ -167,23 +167,31 @@ impl Shade {
             _ => panic!("{} is an invalid Shade value.", byte),
         }
     }
-    pub fn to_u8(&self) -> u8 {
-        match *self {
+}
+
+impl From<u8> for Shade {
+    fn from(value: u8) -> Shade {
+        match value {
+            0 => Shade::White,
+            1 => Shade::LightGray,
+            2 => Shade::DarkGray,
+            3 => Shade::Black,
+            _ => panic!("{} is not a valid integer value for Shade", value)
+        }
+    }
+}
+
+impl Into<u8> for Shade {
+    fn into(self) -> u8 {
+        match self {
             Shade::White => 0,
             Shade::LightGray => 1,
             Shade::DarkGray => 2,
             Shade::Black => 3,
         }
     }
-    pub fn to_rgba(&self) -> [u8; 4] {
-        match self {
-            &Shade::Black => [0, 0, 0, 0xFF],
-            &Shade::DarkGray => [80, 80, 80, 0xFF],
-            &Shade::LightGray => [140, 140, 140, 0xFF],
-            &Shade::White => [15, 188, 155, 0xFF],
-        }
-    }
 }
+
 
 pub struct Palette {
     color_3: Shade,
@@ -201,17 +209,19 @@ impl Palette {
             color_0: Shade::White,
         }
     }
+
     pub fn write_u8(&mut self, byte: u8) {
-        self.color_3 = Shade::from_u8((byte >> 6) & 0b11);
-        self.color_2 = Shade::from_u8((byte >> 4) & 0b11);
-        self.color_1 = Shade::from_u8((byte >> 2) & 0b11);
-        self.color_0 = Shade::from_u8(byte & 0b11);
+        self.color_3 = ((byte >> 6) & 0b11).into();
+        self.color_2 = ((byte >> 4) & 0b11).into();
+        self.color_1 = ((byte >> 2) & 0b11).into();
+        self.color_0 = (byte & 0b11).into();
     }
+
     pub fn read_u8(&self) -> u8 {
-        let c3 = self.color_3.to_u8();
-        let c2 = self.color_2.to_u8();
-        let c1 = self.color_1.to_u8();
-        let c0 = self.color_0.to_u8();
+        let c3: u8 = self.color_3.into();
+        let c2: u8 = self.color_2.into();
+        let c1: u8 = self.color_1.into();
+        let c0: u8 = self.color_0.into();
         c3 << 6 | c2 << 4 | c1 << 2 | c0
     }
 }

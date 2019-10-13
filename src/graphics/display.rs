@@ -1,6 +1,6 @@
-const DISPLAY_WIDTH_PIXELS: u32 = 160;
-const DISPLAY_HEIGHT_PIXELS: u32 = 144;
-const SCALE: u32 = 5;
+const DISPLAY_WIDTH_PIXELS: usize = 160;
+const DISPLAY_HEIGHT_PIXELS: usize = 144;
+const SCALE: u8 = 2;
 const TITLE: &'static str = "BitRomney GB";
 
 pub struct Dims {
@@ -11,8 +11,8 @@ pub struct Dims {
 impl Default for Dims {
     fn default() -> Dims {
         Self {
-            width: 160,
-            height: 144,
+            width: DISPLAY_WIDTH_PIXELS,
+            height: DISPLAY_HEIGHT_PIXELS,
         }
     }
 }
@@ -27,7 +27,7 @@ impl Display {
     pub fn new() -> Display {
         let dims = Dims::default();
         let window = minifb::Window::new(
-            "GameBoy",
+            TITLE,
             dims.width,
             dims.height,
             minifb::WindowOptions {
@@ -40,11 +40,11 @@ impl Display {
         Display {
             window,
             dims,
-            scale: 2,
+            scale: SCALE,
         }
     }
 
     pub fn draw_frame(&mut self, data: &[u32]) {
-        self.window.update_with_buffer(&data);
+        self.window.update_with_buffer(&data).unwrap();
     }
 }

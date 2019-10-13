@@ -83,6 +83,7 @@ impl Ppu {
         info!("Memory Read: {:04X} @ Loc:{:04X}", result, loc);
         result
     }
+
     pub fn write_u8(&mut self, loc: usize, value: u8) {
         match loc {
             0x8000..=0x9FFF => self.vram[loc - 0x8000] = value,
@@ -129,12 +130,7 @@ impl Ppu {
         let offset = (self.ly as usize * 20 * 8) as usize;
         for (i, shade) in shades.into_iter().enumerate() {
             let b = offset + i;
-            self.framebuffer[b] = match shade {
-                Shade::White => 3,
-                Shade::DarkGray => 2,
-                Shade::LightGray => 1,
-                Shade::Black => 0,
-            };
+            self.framebuffer[b] = shade.into();
         }
     }
 
